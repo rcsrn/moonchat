@@ -4,6 +4,7 @@ import(
 	"net"
 	"fmt"
 	"github.com/rcsrn/moonchat/src/message"
+	"encoding/json"
 )
 
 type Server struct {
@@ -33,8 +34,15 @@ func (s *Server) WaitForConnections() {
 	}
 }
 
+//Sends a message that connection was accepted.
 func connectionAccepted() []byte {
-	message := message.GetMessage(1)
-	
+	message := message.GetMessage(1)	
 	return message
+}
+
+//Decoding of message sent by Client.
+func readMessage(b []byte) {
+	var message string
+	json.Unmarshal(b, &message)
+	fmt.Println(message)
 }
