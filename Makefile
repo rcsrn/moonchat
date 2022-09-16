@@ -1,2 +1,2 @@
-build: ./src/main/
-	go build ./src/main/*
+buildServer: ./src/server
+	go build ./src/server/*.go
