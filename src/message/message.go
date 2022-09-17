@@ -5,32 +5,79 @@ import (
 	"encoding/json"
 )
 
-const(	
-	id string = "IDENTIFY"
-	info string = "INFO"
-	warning string = "WARNING"
-	error string = "ERROR"
+const (
+	ERROR_MESSAGE_TYPE = "ERROR"
+	WARNING_MESSAGE_TYPE = "WARNING"
+	INFO_MESSAGE_TYPE = "INFO"
+	IDENTIFY_MESSAGE_TYPE = "IDENTIFY"
 )
+
 
 type ErrorMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 }
 
-func GetMessage(num int) []byte {
-	switch (num) {
-	case 0: message := ErrorMessage{error, "Mensaje de error"}
-		return getJson(message)
-	}
-	return nil
+type WarningMessage struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:"operation"`
+	Username string `json:"username"`
 }
 
-func getJson(message interface{}) []byte {
-	json, err := json.Marshal(message)
+func GetWarningMessageJSON(mess WarningMessage) []byte {
+	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("Esto no deberia ocurrir")
 	}
-	return json
+	return message
 }
 
+
+type InfoMessage struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:"operation"`
+}
+
+func GetInfoMessageJSON(mess InfoMessage) []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("Esto no deberia ocurrir")
+	}
+	return message
+}
+
+type IdentifyMessage struct {
+	Type string `json:"type"`
+	Username string `json"username"`
+}
+
+type ChangeStatusMessage struct {
+	Type string `json:"type"`
+	Status string `json:"status"`
+}
+
+type SuccesChangeStatus struct {
+	Type string `json:"type"`
+	Status string `json:"status"`
+	Operation string `json:"operation"`
+}
+
+type NewStatusMessage struct {
+	Type string `json:"type"`
+}
+
+type NewUserMessage struct {
+	Type string `json:"type"`
+	Username string `json:"username"`
+}
+
+type StatusMessage struct {	
+	Type string `json:"type"`
+}
+
+type GetUsersMessage struct {
+	Type string `json:"type"`
+}
 

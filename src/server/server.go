@@ -4,11 +4,14 @@ import(
 	"net"
 	"fmt"
 	"github.com/rcsrn/moonchat/src/message"
-	"encoding/json"
+	//"encoding/json"
 )
 
-type Server struct {
+type Server struct {	
 }
+
+var users = make(map[string]ServerProcessor)
+
 
 const (
 	SERVER_HOST = "localhost"
@@ -16,33 +19,35 @@ const (
 	SERVER_TYPE = "tcp"
 )
 
-func (s *Server) WaitForConnections() {
+func (server *Server) WaitForConnections() {
+	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
+	fmt.Println("Waiting for connections...")
 	if err != nil {
 		fmt.Println("Algo ha salido mal. :(")
 	}
+	defer connectionListener.Close()
 	
 	for {
 		connection, err := connectionListener.Accept()
 		if err != nil {
-			fmt.Println("FAIL: Connection denied.")
+			fmt.Println("Connection was not accepted.")
 			continue
 		}
 		serverProcessor := ServerProcessor{connection}
-		serverProcessor.sendToClient(connectionAccepted())
-		go serverProcessor.processClient()
+		go serverProcessor.readMessages()
 	}
 }
 
-//Sends a message that connection was accepted.
-func connectionAccepted() []byte {
-	message := message.GetMessage(1)	
-	return message
+func checkIdentify(username string) []byte {
+	if _, ok := users[username]; ok {
+		m := message.WarningMessage{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
+		return message.GetWarningMessageJSON(m)
+	}
+	m := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+	return message.GetInfoMessageJSON(m)
 }
 
-//Decoding of message sent by Client.
-func readMessage(b []byte) {
-	var message string
-	json.Unmarshal(b, &message)
-	fmt.Println(message)
-}
+
+
+
