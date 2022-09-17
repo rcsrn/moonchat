@@ -18,10 +18,11 @@ func (processor *ServerProcessor) readMessages() {
 		if err1 != nil {
 			fmt.Println("Error reading:", err1.Error())
 		}
-		err2 := processor.unmarshalJSON(buffer)
+		message, err2 := processor.unmarshalJSON(buffer)
 		if err2 != nil {
 			// disconect client
 		}
+		processor.processMessage(message)
 	}
 }
 
@@ -29,21 +30,22 @@ func (processor *ServerProcessor) sendMessage(message []byte) {
 	processor.connection.Write(message)
 }
 
-func (processor *ServerProcessor) unmarshalJSON(j []byte) error {
-	var strings map[string]string
-	err := json.Unmarshal(j, &strings)
+func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, error) {
+	var message map[string]string
+	err := json.Unmarshal(j, &message)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var typeMessage = strings["type"]
-	switch typeMessage {
-	case message.IDENTIFY_MESSAGE_TYPE:
-		processor.sendMessage(checkIdentify(strings["username"]))
-		return nil
-	}
-	return nil
+	return message, nil
 }
 
-
+func (processor *ServerProcessor)processMessage(messageGotten map[string]string) {
+	var typeMessage = messageGotten["type"]
+	switch typeMessage {
+	case message.IDENTIFY_MESSAGE_TYPE:
+		processor.sendMessage(checkIdentify(messageGotten["username"], processor))
+	}
+	//Faltan todos los demas casos
+}
 
 

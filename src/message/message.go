@@ -10,8 +10,8 @@ const (
 	WARNING_MESSAGE_TYPE = "WARNING"
 	INFO_MESSAGE_TYPE = "INFO"
 	IDENTIFY_MESSAGE_TYPE = "IDENTIFY"
+	NEW_USER_TYPE = "NEW_USER"
 )
-
 
 type ErrorMessage struct {
 	Type string `json:"type"`
