@@ -56,12 +56,17 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 
 func addUser(username string, processor *ServerProcessor) {
 	counter.users[username] = processor
-	//m := message.NewUserMessage{message.NEW_USER_TYPE, username}
-	
-	//Avisa a todos los usuarios que el usuario ha sido agregado
+	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
+	toAllUsers(message.GetNewUserMessageJSON(m))
 }
-// Debe iterar el diccionario de usuarios e ir diciendo a los procesadores que envien ese mensaje a traves de cada conexion.
-//func toAllUsers(message []byte) {
-	
-//}
+
+func toAllUsers(message []byte) {
+	counter.RLock()
+	for _, element := range counter.users {
+		var processor *ServerProcessor = element
+		processor.sendMessage(message)
+	}
+	counter.RUnlock()
+}
+
 

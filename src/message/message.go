@@ -28,7 +28,7 @@ type WarningMessage struct {
 func GetWarningMessageJSON(mess WarningMessage) []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
-		fmt.Println("Esto no deberia ocurrir")
+		fmt.Println("This should not happen")
 	}
 	return message
 }
@@ -43,7 +43,7 @@ type InfoMessage struct {
 func GetInfoMessageJSON(mess InfoMessage) []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
-		fmt.Println("Esto no deberia ocurrir")
+		fmt.Println("This should not happen")
 	}
 	return message
 }
@@ -71,6 +71,14 @@ type NewStatusMessage struct {
 type NewUserMessage struct {
 	Type string `json:"type"`
 	Username string `json:"username"`
+}
+
+func GetNewUserMessageJSON(mess NewUserMessage) []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
 }
 
 type StatusMessage struct {	

@@ -10,10 +10,11 @@ import(
 //Test for checkidentify function
 func TestCheckIdentify(t *testing.T) {
 	var processor ServerProcessor = ServerProcessor{}
+	
 	gottenMessage := string(checkIdentify("Juan", &processor))
 	mess := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
 	rightMessage := string(message.GetInfoMessageJSON(mess))
-
+	
 	if value := strings.Compare(gottenMessage, rightMessage); value != 0 {
 		t.Errorf("message that was gotten is %v and must be %v", gottenMessage, rightMessage)
 	}
@@ -44,3 +45,15 @@ func cleanUsersMap() {
 		delete(counter.users, k)
 	}
 }
+
+
+//func TestToAllUsers(t *testing.T) {
+	// num := 10
+	// str := "a"
+	// for num > 0 {
+	// 	processor := ServerProcessor{}
+	// 	counter.users[str] = &processor
+	// 	str += "a"
+	// 	num--
+	// }
+//}
