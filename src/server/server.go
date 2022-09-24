@@ -4,12 +4,17 @@ import(
 	"net"
 	"fmt"
 	"github.com/rcsrn/moonchat/src/message"
+	"sync"
 )
 
 type Server struct {
 }
 
-var users = make(map[string]*ServerProcessor)
+//Map protected for concurrency
+var counter = struct{
+    sync.RWMutex
+    users map[string]*ServerProcessor
+}{users: make(map[string]*ServerProcessor)}
 
 const (
 	SERVER_HOST = "localhost"
@@ -38,17 +43,19 @@ func (server *Server) WaitForConnections() {
 }
 
 func checkIdentify(username string, processor *ServerProcessor) []byte {
-	if _, ok := users[username]; ok {
+	counter.RLock()
+	if _, ok := counter.users[username]; ok {
 		m := message.WarningMessage{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
 		return message.GetWarningMessageJSON(m)
 	}
+	counter.RUnlock()
 	addUser(username, processor)
 	m := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
 	return message.GetInfoMessageJSON(m)
 }
 
 func addUser(username string, processor *ServerProcessor) {
-	users[username] = processor
+	counter.users[username] = processor
 	//m := message.NewUserMessage{message.NEW_USER_TYPE, username}
 	
 	//Avisa a todos los usuarios que el usuario ha sido agregado

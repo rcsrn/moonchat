@@ -1,7 +1,7 @@
 package main
 
 import(
-	//"fmt"
+	"fmt"
 	"testing"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
@@ -26,11 +26,21 @@ func TestCheckIdentify(t *testing.T) {
 	}
 }
 
-//func TestAddUser(t *testing.T) {
-// 	var username string = "Username"
-// 	var processor ServerProcessor = ServerProcessor{}
-// 	addUser(username, &processor)
-// 	if 
-// }
+//Test for adding a new user 
+func TestAddUser(t *testing.T) {
+	cleanUsersMap()
+	var username string = "Username"
+	var processor ServerProcessor = ServerProcessor{}
+	addUser(username, &processor)
+	if length := len(counter.users); length == 0 {
+		t.Errorf("User has not been added to autentificated users")
+	}
+	fmt.Printf("The user added is: %v\n", counter.users)
+}
 
-
+//Cleans the users map of the server to run more tests
+func cleanUsersMap() {
+	for k := range counter.users {
+		delete(counter.users, k)
+	}
+}
