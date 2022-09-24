@@ -5,11 +5,16 @@ import(
 	"testing"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
+	"net"
 )
 
 //Test for checkidentify function
 func TestCheckIdentify(t *testing.T) {
-	var processor ServerProcessor = ServerProcessor{}
+	conn, err := net.Dial("tcp", "localhost:1234")
+	if err != nil {
+		t.Errorf("could not connect to server")
+	}
+	var processor ServerProcessor = ServerProcessor{conn}
 	
 	gottenMessage := string(checkIdentify("Juan", &processor))
 	mess := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}

@@ -10,6 +10,7 @@ import (
 var testProcessor ServerProcessor;
 
 func TestUnmarshalJSON(t *testing.T) {
+
 	testProcessor = ServerProcessor{}
 	var m message.InfoMessage = message.InfoMessage{message.INFO_MESSAGE_TYPE, "this is test", message.IDENTIFY_MESSAGE_TYPE}
 	

@@ -60,7 +60,7 @@ func addUser(username string, processor *ServerProcessor) {
 	toAllUsers(message.GetNewUserMessageJSON(m))
 }
 
-func toAllUsers(message []byte) {
+func toAllUsers( message []byte) {
 	counter.RLock()
 	for _, element := range counter.users {
 		var processor *ServerProcessor = element

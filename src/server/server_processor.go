@@ -27,7 +27,9 @@ func (processor *ServerProcessor) readMessages() {
 }
 
 func (processor *ServerProcessor) sendMessage(message []byte) {
-	processor.connection.Write(message)
+	if processor.connection != nil {
+		processor.connection.Write(message)
+	}
 }
 
 func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, error) {
