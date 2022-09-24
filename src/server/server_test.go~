@@ -1,0 +1,18 @@
+package main
+
+import(
+	"testing"
+	"github.com/rcsrn/moonchat/src/message"
+	"bytes"
+)
+
+func TestCheckIdentify(t *testing.T) {
+	var processor ServerProcessor = ServerProcessor{}
+	gottenMessage := checkIdentify("Juan", &processor)
+	mess := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes : username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+	rightMessage := message.GetInfoMessageJSON(mess)
+	if value := bytes.Compare(gottenMessage, rightMessage); value != 0 {
+		t.Errorf("Gotten message is incorrect")
+	}
+}
+

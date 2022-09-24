@@ -40,7 +40,7 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 }
 
 func (processor *ServerProcessor)processMessage(messageGotten map[string]string) {
-	var typeMessage = messageGotten["type"]
+	var typeMessage string = messageGotten["type"]
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
 		processor.sendMessage(checkIdentify(messageGotten["username"], processor))
