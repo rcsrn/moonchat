@@ -53,6 +53,14 @@ type IdentifyMessage struct {
 	Username string `json"username"`
 }
 
+func GetIdentifyMessageJSON(mess IdentifyMessage) []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
 type ChangeStatusMessage struct {
 	Type string `json:"type"`
 	Status string `json:"status"`

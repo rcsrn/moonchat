@@ -37,6 +37,7 @@ func (server *Server) WaitForConnections() {
 			fmt.Println("Connection was not accepted.")
 			continue
 		}
+		fmt.Println("Client connected from", connection.RemoteAddr())
 		serverProcessor := ServerProcessor{connection}
 		go serverProcessor.readMessages()
 	}
@@ -57,16 +58,16 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 func addUser(username string, processor *ServerProcessor) {
 	counter.users[username] = processor
 	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
-	toAllUsers(message.GetNewUserMessageJSON(m))
+	message := message.GetNewUserMessageJSON(m)
+	toAllUsers(message)
 }
 
-func toAllUsers( message []byte) {
-	counter.RLock()
+func toAllUsers(message []byte) {
+	//counter.RLock()
 	for _, element := range counter.users {
-		var processor *ServerProcessor = element
-		processor.sendMessage(message)
+		element.sendMessage(message)
 	}
-	counter.RUnlock()
+	//counter.RUnlock()
 }
 
 
