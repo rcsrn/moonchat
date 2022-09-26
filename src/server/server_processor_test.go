@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
-	//"net"
-	//"fmt"
+	"net"
+	"fmt"
 )
 
 var testProcessor ServerProcessor;
@@ -43,6 +43,22 @@ func TestUnmarshalJSON(t *testing.T) {
 		}
 	}
 }
+
+
+func TestSendMessages(t *testing.T) {
+	cleanUsersMap()
+	fmt.Printf("Connected users are: %v", counter.users)
+	conn, err := net.Dial("tcp", "localhost:1234")
+	if err != nil {
+		t.Errorf("could not connect to server")
+	}
+
+	i := message.NewUserMessage{message.NEW_USER_TYPE, "Juan"}
+	id := message.GetNewUserMessageJSON(i)
+	conn.Write(id)
+	fmt.Printf("Connected users are: %v", counter.users)
+}
+
 
 // func TestSendMessages(t *testing.T) {
 // 	conn, err := net.Dial("tcp", "localhost:1234")

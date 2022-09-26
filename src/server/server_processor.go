@@ -9,6 +9,7 @@ import (
 
 type ServerProcessor struct {
 	connection net.Conn
+
 }
 
 // reads messages sent by client
@@ -29,7 +30,8 @@ func (processor *ServerProcessor) readMessages() {
 
 //disconnects the client when it sends a message out the protocol.
 func disconnectClient() {
-	
+	connection.close()
+	delete(counter.users, )
 }
 
 //sends messages to the client through its connection.
