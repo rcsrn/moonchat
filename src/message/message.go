@@ -10,7 +10,8 @@ const (
 	WARNING_MESSAGE_TYPE = "WARNING"
 	INFO_MESSAGE_TYPE = "INFO"
 	IDENTIFY_MESSAGE_TYPE = "IDENTIFY"
-	NEW_USER_TYPE = "NEW_USER"
+	NEW_USER_MESSAGE_TYPE = "NEW_USER"
+	DISCONNECTED_MESSAGE_TYPE = "DISCONNECTED"
 )
 
 type ErrorMessage struct {
@@ -93,7 +94,16 @@ type StatusMessage struct {
 	Type string `json:"type"`
 }
 
-type GetUsersMessage struct {
+type DisconnectedMessage struct {
 	Type string `json:"type"`
+	Username string `json:"username"`
+}
+
+func GetDisconnectedMessageJSON(mess DisconnectedMessage) []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
 }
 

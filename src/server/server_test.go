@@ -6,8 +6,6 @@ import(
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
 	"net"
-	//"encoding/json"
-	//"io"
 )
 
 //Test for checkidentify function
@@ -53,50 +51,6 @@ func cleanUsersMap() {
 		delete(counter.users, k)
 	}
 }
-
-//Test for sending a message to all identified users
-// func TestToAllUsers(t *testing.T) {
-// 	cleanUsersMap()
-// 	conn, err := net.Dial("tcp", "localhost:1234")
-// 	if err != nil {
-// 		t.Errorf("could not connect to server")
-// 	}
-// 	defer conn.Close()
-// 	process := ServerProcessor{conn}
-// 	addUser("Rodrigo", &process)
-// 	mess := message.NewUserMessage{message.NEW_USER_TYPE, "Juan"}
-// 	message1, err := json.Marshal(mess)
-// 	if err != nil {
-// 		t.Errorf("Message was not created succesfully")
-// 	}
-	
-// 	//toAllUsers(message1)
-// 	el := counter.users["Rodrigo"]
-// 	fmt.Println(el)
-// 	el.connection.Write(message1)
-
-	
-// 	fmt.Println("The length of identified user map is: ", len(counter.users))
-// 	fmt.Println(counter.users)
-// 	for user, processor := range counter.users {
-// 		buffer := make([]byte, 1024)
-// 		_ , err := processor.connection.Read(buffer)
-		
-// 		if err != nil {
-// 			if err == io.EOF {
-// 				t.Errorf("It is not possible to read from connection")				
-// 			}
-// 		}
-// 		var message2 []byte
-// 		err1 := json.Unmarshal(buffer, &message2)
-// 		if err1 != nil {
-// 			t.Errorf("Json was not unmarshaled succesfully")
-// 		}
-// 		if value := compareMessages(message1, message2); value != 0 {
-// 			t.Errorf("The message recieved for the user %v is %v and must be %v", user, message2, message1)
-// 		}
-// 	}
-// }
 
 func compareMessages(message1 []byte, message2 []byte) (int) {
 	return strings.Compare(string(message1), string(message2))

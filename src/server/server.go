@@ -60,17 +60,17 @@ func addUser(username string, processor *ServerProcessor) {
 	counter.Lock()
 	counter.users[username] = processor
 	counter.Unlock()
-	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
+	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
 	message := message.GetNewUserMessageJSON(m)
 	toAllUsers(message)
 }
 
 func toAllUsers(message []byte) {
-	//counter.RLock()
+	counter.RLock()
 	for _, element := range counter.users {
 		element.sendMessage(message)
 	}
-	//counter.RUnlock()
+	counter.RUnlock()
 }
 
 

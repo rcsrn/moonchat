@@ -5,42 +5,53 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
+	"strings"
 )
 
 type ServerProcessor struct {
 	connection net.Conn
-	user string
+	username string
 }
 
-// reads messages sent by client
+var identified bool
+
+// reads sent messages by client
 func (processor *ServerProcessor) readMessages() {
 	for {	
 		buffer := make([]byte, 1024)
 		_, err1 := processor.connection.Read(buffer)
 		if err1 != nil {
-			fmt.Println("Error while reading:", err1.Error())
-			
+			fmt.Println("Error while reading:", err1.Error())	
 		}
-		message, err2 := processor.unmarshalJSON(buffer)
+		messageRecieved, err2 := processor.unmarshalJSON(buffer)
 		if err2 != nil {
+			processor.sendMessage([]byte("Sorry, bad operation :\n"))
+			if identified {
+				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+				toAllUsers(message.GetDisconnectedMessageJSON(disconn))
+			} 
 			processor.disconnectClient()
+			break
 		}
-		processor.processMessage(message)
+		processor.processMessage(messageRecieved)
 	}
 }
 
 //sets the username to the client once it has been identified.
-func (processor *ServerProcessor) setUserName(userName string) {
-	processor.user = userName
+func (processor *ServerProcessor) setUserName(name string) {
+	processor.username = name
+	identified = true
 }
 
 
 //disconnects the client when it sends a message out the protocol.
 func (processor *ServerProcessor) disconnectClient() {
 	processor.connection.Close()
-	counter.RLock()
-	delete(counter.users, processor.user)
-	counter.RUnlock()
+	if value := strings.Compare(processor.username, ""); value != 0 {
+		counter.RLock()
+		delete(counter.users, processor.username)
+		counter.RUnlock()
+	}
 }
 
 //sends messages to the client through its connection.
