@@ -18,7 +18,7 @@ func (processor *ServerProcessor) readMessages() {
 		buffer := make([]byte, 1024)
 		_, err1 := processor.connection.Read(buffer)
 		if err1 != nil {
-			fmt.Println("Error while reading:" err1.Error())
+			fmt.Println("Error while reading:", err1.Error())
 			
 		}
 		message, err2 := processor.unmarshalJSON(buffer)
