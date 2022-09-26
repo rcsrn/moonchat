@@ -38,7 +38,7 @@ func (server *Server) WaitForConnections() {
 			continue
 		}
 		fmt.Println("Client connected from", connection.RemoteAddr())
-		serverProcessor := ServerProcessor{connection}
+		serverProcessor := ServerProcessor{connection, ""}
 		go serverProcessor.readMessages()
 	}
 }
@@ -51,12 +51,15 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 	}
 	counter.RUnlock()
 	addUser(username, processor)
+	processor.setUserName(username)
 	m := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
 	return message.GetInfoMessageJSON(m)
 }
 
 func addUser(username string, processor *ServerProcessor) {
+	counter.Lock()
 	counter.users[username] = processor
+	counter.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
 	message := message.GetNewUserMessageJSON(m)
 	toAllUsers(message)

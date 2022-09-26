@@ -9,7 +9,7 @@ import (
 
 type ServerProcessor struct {
 	connection net.Conn
-
+	user string
 }
 
 // reads messages sent by client
@@ -18,20 +18,29 @@ func (processor *ServerProcessor) readMessages() {
 		buffer := make([]byte, 1024)
 		_, err1 := processor.connection.Read(buffer)
 		if err1 != nil {
-			fmt.Println("Error reading:", err1.Error())
+			fmt.Println("Error while reading:" err1.Error())
+			
 		}
 		message, err2 := processor.unmarshalJSON(buffer)
 		if err2 != nil {
-			disconnectClient()
+			processor.disconnectClient()
 		}
 		processor.processMessage(message)
 	}
 }
 
+//sets the username to the client once it has been identified.
+func (processor *ServerProcessor) setUserName(userName string) {
+	processor.user = userName
+}
+
+
 //disconnects the client when it sends a message out the protocol.
-func disconnectClient() {
-	connection.close()
-	delete(counter.users, )
+func (processor *ServerProcessor) disconnectClient() {
+	processor.connection.Close()
+	counter.RLock()
+	delete(counter.users, processor.user)
+	counter.RUnlock()
 }
 
 //sends messages to the client through its connection.
@@ -60,5 +69,6 @@ func (processor *ServerProcessor)processMessage(messageGotten map[string]string)
 	}
 	// other cases must be implemented.
 }
+
 
 
