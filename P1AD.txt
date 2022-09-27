@@ -1,0 +1,36 @@
+Proyecto 1:
+
+ANALISIS Y DISEÑO:
+
+Realizaremos un diseño orientado a objetos.
+Para nuestro nuestro servidor necesitamos los objetos: Chat, Server, ServerProcessor y Room los cuales manejar'an todo lo relacionado con el servidor.
+Server se encargar'a de recibir y manejar conexiones, ya sea acept'andolas o rechazandolas, de manera concurrente. Si una conexi'on es aceptada se delegar'a a un ServerProcessor y se seguir'an aceptando m'as conexiones, en cambio si la conexion es rechaza simplemente Server la ignorar'a. Server guardar'a el estado de los usuarios conectados y de las salas creadas. Para que el cliente mantenga la conexi'on con el cliente se le solicitar'a identificarse con un nombre de usuario que no haya sido utilizado.
+
+
+ServerProcessor recibir'a las conexiones aceptadas por Server y ser'a el encargado de enviar y recibir mensajes los cuales ser'an procesados a trav'es de Server.
+Room tendra el total de los usuarios que estan en la sala, podr'a dar a conocer qui`enes son los usuarios dentro de la sala.
+
+Del lado del cliente utilizaremos los objetos: Client, ClientProcessor.
+Client ser'a el encargado de enviar la solicitud de conexi'on al servidor y abrir el canal de comunicaci'on a trav'es de un Socket.
+ClientProcessor una vez establecida la conexi'on con Server procesar'a los mensajes recibidos y adem'as enviar'a nuevos mensajes.
+
+Para el manejo de mensajes tendremos distintos tipos de mensajes dependiendo de lo que se este enviando o recibiendo.
+
+
+****NUEVO
+
+
+Realizaremos un diseño orientado a objetos.
+Necesitaremos los siguientes objetos: Server, ProcessorServer, ProcessorClient, Room y los diferentes tipos de mensajes que tenemos en el protocolo.
+Server se encargar'a de recibir conexiones de manera concurrente. Si una conexi'on es aceptada se crear'a un ProcessorServer el cual se ocupar'a de recibir y enviar mensajes al cliente. La forma en que lo har'a ser'a a trav'es de un ciclo de lectura donde tomar'a el mensaje enviado por el cliente, lo decodificar'a y a traves de un MessageVerifier verificar'a que el mensaje tenga la estructura de un mensaje v'alido, si este es el caso entonces se proceder'a realizando la acci'on determinada en el mensaje y ProcessorServer seguir'a en espera de nuevos mensajes, en otro caso Server desconectar'a al cliente.
+Lo primero que debe realizar el usuario es identificarse a trav'es de un nombre de usuario. Una vez identificado el servidor lo guardar'a en un diccionario con todos los usuarios identificados con su correspondiente conexi'on. En caso de que el cliente envie algun mensaje invalido el servidor simplemente lo desconectar'a y lo eliminara del diccionario de usuarios identificados
+MessageVerifier s'lo se encargara de tomar mensajes recibidor por ProcessorServer y compararlos con los diferentes tipos de mensajes validos.
+El usuario tendra un identificador.
+
+
+**** NUEVO
+Realizaremos un diseño orientado a objetos.
+Necesitaremos los siguientes objetos: Server, ServerProcessor, Client, ClientProcessor, Room y los diferentes tipos de mensajes que tenemeos en el protocolo.
+Server se encargar'a de todo lo relacionado con el servidor, todo el tiempo estar'a en espera de conexiones. Si una conexion es aceptada, esta se delegar'ra a un ServerProcessor y se seguiran aceptando nuevas conexiones. Server tendra una coleccion de todos los usuarios identificados con su respectiva conexion de forma que si algun usuario manda un mensaje, dependiendo del tipo, se notifcar'a con un mensaje a cada usuario de que tal mensaje ha sido enviado.
+
+ServerProcessor tendra la conexion establecida con el cliente y ser'a el intermediario entre la comunicaci'on del cliente con el servidor, se encargar'a de leer todos los mensajes enviados por el cliente, procesando y enviando las peticiones hechas por el cliente hacia el servidor as'i como de enviar los mensajes del servidor hacia el cliente. 
