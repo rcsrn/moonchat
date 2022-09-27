@@ -48,7 +48,7 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 	counter.RLock()
 	if _, ok := counter.users[username]; ok {
 		m := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
-		return message.GetWarningMessageJSON(m)
+		return m.GetJSON()
 	}
 	counter.RUnlock()
 	addUser(username, processor)

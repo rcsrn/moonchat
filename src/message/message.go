@@ -16,7 +16,7 @@ const (
 )
 
 type Message interface {
-	
+	GetJSON() []byte
 }
 
 
@@ -32,7 +32,7 @@ type WarningMessageUsername struct {
 	Username string `json:"username"`
 }
 
-func GetWarningMessageJSON(mess WarningMessageUsername) []byte {
+func (mess WarningMessageUsername) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
