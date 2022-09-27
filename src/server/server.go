@@ -47,7 +47,7 @@ func (server *Server) WaitForConnections() {
 func checkIdentify(username string, processor *ServerProcessor) []byte {
 	counter.RLock()
 	if _, ok := counter.users[username]; ok {
-		m := message.WarningMessage{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
+		m := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
 		return message.GetWarningMessageJSON(m)
 	}
 	counter.RUnlock()

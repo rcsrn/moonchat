@@ -15,19 +15,24 @@ const (
 	STATUS_MESSAGE_TYPE = "STATUS"
 )
 
+type Message interface {
+	
+}
+
+
 type ErrorMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 }
 
-type WarningMessage struct {
+type WarningMessageUsername struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:"operation"`
 	Username string `json:"username"`
 }
 
-func GetWarningMessageJSON(mess WarningMessage) []byte {
+func GetWarningMessageJSON(mess WarningMessageUsername) []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
