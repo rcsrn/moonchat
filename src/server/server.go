@@ -38,7 +38,8 @@ func (server *Server) WaitForConnections() {
 			continue
 		}
 		fmt.Println("Client connected from", connection.RemoteAddr())
-		serverProcessor := ServerProcessor{connection, ""}
+		//It is neccesary to add an default status.
+		serverProcessor := ServerProcessor{connection, "", ""}
 		go serverProcessor.readMessages()
 	}
 }

@@ -11,6 +11,7 @@ import (
 type ServerProcessor struct {
 	connection net.Conn
 	username string
+	status string
 }
 
 var identified bool
@@ -71,12 +72,26 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 	return message, nil
 }
 
+func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
+	// if accepted := message.VerifyStatus(newStatus); !accepted {
+	// 	mess := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, "Invalid status", message.STATUS_MESSAGE_TYPE, newStatus}
+	// 	return mess.getJSON()
+	// }
+	// mess := message.StatusMessage(message.STATUS_MESSAGE_TYPE, newStatus)
+	// return mess.getJSON()
+	return nil
+}
+
+
+
 //processes received messages.
 func (processor *ServerProcessor)processMessage(messageGotten map[string]string) {
 	var typeMessage string = messageGotten["type"]
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
 		processor.sendMessage(checkIdentify(messageGotten["username"], processor))
+	case message.STATUS_MESSAGE_TYPE:
+		processor.sendMessage(processor.changeStatus(messageGotten["status"]))
 	}
 	// other cases must be implemented.
 }
