@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
+	"log"
 )
 
 type ServerProcessor struct {
@@ -26,11 +27,12 @@ func (processor *ServerProcessor) readMessages() {
 		}
 		messageRecieved, err2 := processor.unmarshalJSON(buffer)
 		if err2 != nil {
-			processor.sendMessage([]byte("Sorry, bad operation :\n"))
+			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			if identified {
 				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
-				toAllUsers(message.GetDisconnectedMessageJSON(disconn))
-			} 
+				toAllUsers(disconn.GetJSON())
+			}
+			log.Printf("Error: %v\n", err2)
 			processor.disconnectClient()
 			break
 		}
@@ -44,6 +46,9 @@ func (processor *ServerProcessor) setUserName(name string) {
 	identified = true
 }
 
+func (processor *ServerProcessor) setStatus(newStatus string) {
+	processor.status = newStatus
+}
 
 //disconnects the client when it sends a message out the protocol.
 func (processor *ServerProcessor) disconnectClient() {
@@ -52,6 +57,8 @@ func (processor *ServerProcessor) disconnectClient() {
 		counter.RLock()
 		delete(counter.users, processor.username)
 		counter.RUnlock()
+		mess := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+		toAllUsers(mess.GetJSON())
 	}
 }
 
@@ -73,15 +80,16 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 }
 
 func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
-	// if accepted := message.VerifyStatus(newStatus); !accepted {
-	// 	mess := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, "Invalid status", message.STATUS_MESSAGE_TYPE, newStatus}
-	// 	return mess.getJSON()
-	// }
-	// mess := message.StatusMessage(message.STATUS_MESSAGE_TYPE, newStatus)
-	// return mess.getJSON()
-	return nil
+	if accepted := verifyStatus(newStatus); !accepted {
+		mess := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, "Invalid status", message.STATUS_MESSAGE_TYPE, newStatus}
+		return mess.GetJSON()
+	}
+	mess := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "status changed succesfully", message.STATUS_MESSAGE_TYPE}
+	messUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, newStatus}
+	toAllUsers(messUsers.GetJSON())
+	processor.setStatus(newStatus)
+	return mess.GetJSON()
 }
-
 
 
 //processes received messages.
@@ -90,8 +98,17 @@ func (processor *ServerProcessor)processMessage(messageGotten map[string]string)
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
 		processor.sendMessage(checkIdentify(messageGotten["username"], processor))
+		break
 	case message.STATUS_MESSAGE_TYPE:
 		processor.sendMessage(processor.changeStatus(messageGotten["status"]))
+		break
+	case message.USERS_MESSAGE_TYPE:
+		processor.sendMessage(getUserList())
+		break
+	case message.DISCONNECT_MESSAGE_TYPE:
+		processor.disconnectClient()
+		break
+		
 	}
 	// other cases must be implemented.
 }

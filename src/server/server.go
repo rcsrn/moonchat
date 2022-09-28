@@ -53,8 +53,8 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 	counter.RUnlock()
 	addUser(username, processor)
 	processor.setUserName(username)
-	m := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
-	return message.GetInfoMessageJSON(m)
+	m := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+	return m.GetJSON()
 }
 
 func addUser(username string, processor *ServerProcessor) {
@@ -62,16 +62,35 @@ func addUser(username string, processor *ServerProcessor) {
 	counter.users[username] = processor
 	counter.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
-	message := message.GetNewUserMessageJSON(m)
-	toAllUsers(message)
+	toAllUsers(m.GetJSON())
 }
 
 func toAllUsers(message []byte) {
 	counter.RLock()
 	for _, element := range counter.users {
 		element.sendMessage(message)
-	}
+	}	
 	counter.RUnlock()
+	fmt.Println("SI LLEGA AQUI SI TERMINO")	
+}
+
+//Returns the identified user list
+func getUserList() []byte {
+	var listOfUsers []string
+	for username, _ := range counter.users{
+		listOfUsers = append(listOfUsers, username)
+	}
+	mess := message.UserList{message.USER_LIST_MESSAGE_TYPE, listOfUsers}
+	return mess.GetJSON()
+}
+
+//verifies the statatus sent by client.x
+func verifyStatus (status string) bool {
+	switch status {
+	case "AWAY": return true
+	case "BUSY": return true
+	default: return false
+	}
 }
 
 

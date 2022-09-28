@@ -5,29 +5,23 @@ import(
 	"testing"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
-	"net"
 )
 
 //Test for checkidentify function
 func TestCheckIdentify(t *testing.T) {
-	conn, err := net.Dial("tcp", "localhost:1234")
-	if err != nil {
-		t.Errorf("could not connect to server")
-	}
-	defer conn.Close()
-	var processor ServerProcessor = ServerProcessor{conn}
+	var processor ServerProcessor = ServerProcessor{}
 	
 	gottenMessage := string(checkIdentify("Juan", &processor))
-	mess := message.InfoMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
-	rightMessage := string(message.GetInfoMessageJSON(mess))
+	mess := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+	rightMessage := string(mess.GetJSON())
 	
 	if value := strings.Compare(gottenMessage, rightMessage); value != 0 {
 		t.Errorf("message that was gotten is %v and must be %v", gottenMessage, rightMessage)
 	}
 	
 	gottenMessage2 := string(checkIdentify("Juan", &processor))
-	mess2 := message.WarningMessage{message.WARNING_MESSAGE_TYPE, "username already used", message.IDENTIFY_MESSAGE_TYPE, "Juan"}
-	rightMessage2 := string(message.GetWarningMessageJSON(mess2))
+	mess2 := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "username already used", message.IDENTIFY_MESSAGE_TYPE, "Juan"}
+	rightMessage2 := string(mess2.GetJSON())
 	if value := strings.Compare(gottenMessage2, rightMessage2); value != 0 {
 		t.Errorf("message that was gotten is %v and must be %v", gottenMessage2, rightMessage2)
 	}
@@ -38,7 +32,8 @@ func TestAddUser(t *testing.T) {
 	cleanUsersMap()
 	var username string = "Username"
 	var processor ServerProcessor = ServerProcessor{}
-	addUser(username, &processor)
+	fmt.Println(counter.users)
+	addUser(username, &processor)	
 	if length := len(counter.users); length == 0 {
 		t.Errorf("User has not been added to autentificated users")
 	}

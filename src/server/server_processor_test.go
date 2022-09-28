@@ -5,20 +5,19 @@ import (
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
-	"net"
-	"fmt"
 )
 
 var testProcessor ServerProcessor;
 
+
 func TestUnmarshalJSON(t *testing.T) {	
 	testProcessor = ServerProcessor{}
-	var m message.InfoMessage = message.InfoMessage{message.INFO_MESSAGE_TYPE, "this is test", message.IDENTIFY_MESSAGE_TYPE}
+	var m message.SuccesMessage = message.SuccesMessage{message.INFO_MESSAGE_TYPE, "this is test", message.IDENTIFY_MESSAGE_TYPE}
 	
 	jsonMessage, err1 := json.Marshal(m)
 	
 	if err1 != nil {
-		t.Errorf("This should not happen, the error gotten is: %v", err1)
+		t.Errorf("This should not happen, the gotten error is: %v", err1)
 	}
 	
 	gottenMessage, err2 := testProcessor.unmarshalJSON(jsonMessage)
@@ -42,20 +41,5 @@ func TestUnmarshalJSON(t *testing.T) {
 			}
 		}
 	}
-}
-
-
-func TestSendMessages(t *testing.T) {
-	cleanUsersMap()
-	fmt.Printf("Connected users are: %v", counter.users)
-	conn, err := net.Dial("tcp", "localhost:1234")
-	if err != nil {
-		t.Errorf("could not connect to server")
-	}
-
-	i := message.NewUserMessage{message.NEW_USER_TYPE, "Juan"}
-	id := message.GetNewUserMessageJSON(i)
-	conn.Write(id)
-	fmt.Printf("Connected users are: %v", counter.users)
 }
 
