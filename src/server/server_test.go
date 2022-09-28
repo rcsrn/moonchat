@@ -30,7 +30,7 @@ func TestCheckIdentify(t *testing.T) {
 //Test for adding a new user 
 func TestAddUser(t *testing.T) {
 	cleanUsersMap()
-	var username string = "Username"
+	var username string = "Kimberly"
 	var processor ServerProcessor = ServerProcessor{}
 	fmt.Println(counter.users)
 	addUser(username, &processor)	

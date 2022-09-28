@@ -16,6 +16,7 @@ type ServerProcessor struct {
 }
 
 var identified bool
+var invalid bool
 
 // reads sent messages by client
 func (processor *ServerProcessor) readMessages() {
@@ -54,9 +55,9 @@ func (processor *ServerProcessor) setStatus(newStatus string) {
 func (processor *ServerProcessor) disconnectClient() {
 	processor.connection.Close()
 	if value := strings.Compare(processor.username, ""); value != 0 {
-		counter.RLock()
+		counter.blocker.Lock()
 		delete(counter.users, processor.username)
-		counter.RUnlock()
+		counter.blocker.Unlock()
 		mess := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
 		toAllUsers(mess.GetJSON())
 	}
@@ -81,7 +82,8 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 
 func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
 	if accepted := verifyStatus(newStatus); !accepted {
-		mess := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, "Invalid status", message.STATUS_MESSAGE_TYPE, newStatus}
+		mess := message.ErrorMessageStatus{message.ERROR_MESSAGE_TYPE, "Invalid status!", message.STATUS_MESSAGE_TYPE}
+		invalid = true
 		return mess.GetJSON()
 	}
 	mess := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "status changed succesfully", message.STATUS_MESSAGE_TYPE}
@@ -92,15 +94,18 @@ func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
 }
 
 
-//processes received messages.
-func (processor *ServerProcessor)processMessage(messageGotten map[string]string) {
-	var typeMessage string = messageGotten["type"]
+//processes received messages proceeding in each case as necessary.
+func (processor *ServerProcessor)processMessage(gottenMessage map[string]string) {
+	var typeMessage string = gottenMessage["type"]
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
-		processor.sendMessage(checkIdentify(messageGotten["username"], processor))
+		processor.sendMessage(checkIdentify(gottenMessage["username"], processor))
 		break
 	case message.STATUS_MESSAGE_TYPE:
-		processor.sendMessage(processor.changeStatus(messageGotten["status"]))
+		processor.sendMessage(processor.changeStatus(gottenMessage["status"]))
+		if invalid {
+			processor.disconnectClient()
+		}
 		break
 	case message.USERS_MESSAGE_TYPE:
 		processor.sendMessage(getUserList())
@@ -108,9 +113,18 @@ func (processor *ServerProcessor)processMessage(messageGotten map[string]string)
 	case message.DISCONNECT_MESSAGE_TYPE:
 		processor.disconnectClient()
 		break
-		
+	case message.PUBLIC_MESSAGE_TYPE:
+		publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, processor.username, gottenMessage["message"]}
+		toAllUsers(publicMessage.GetJSON())
+		break
+	case message.MESSAGE_TYPE:
+		err := sendPrivateMessage(gottenMessage["username"], gottenMessage["message"], processor.username)
+		if err != nil {
+			warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "the user received does not exist", message.MESSAGE_TYPE, gottenMessage["username"]}
+			processor.sendMessage(warning.GetJSON())
+		}
+		break
 	}
-	// other cases must be implemented.
 }
 
 

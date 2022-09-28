@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	PUBLIC_MESSAGE_FROM_TYPE = "PUBLIC_MESSAGE_FROM"
+	PUBLIC_MESSAGE_TYPE = "PUBLIC_MESSAGE"
 	ERROR_MESSAGE_TYPE = "ERROR"
 	WARNING_MESSAGE_TYPE = "WARNING"
 	INFO_MESSAGE_TYPE = "INFO"
@@ -18,6 +20,7 @@ const (
 	USERS_MESSAGE_TYPE = "USERS"
 	USER_LIST_MESSAGE_TYPE = "USER_LIST"
 	MESSAGE_TYPE = "MESSAGE"
+	PRIVATE_MESSAGE_TYPE = "MESSAGE_FROM"
 )
 
 type Message interface {
@@ -25,9 +28,18 @@ type Message interface {
 }
 
 
-type ErrorMessage struct {
+type ErrorMessageStatus struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
+	Operation string `json:operation"`
+}
+
+func (mess ErrorMessageStatus) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
 }
 
 type WarningMessageUsername struct {
