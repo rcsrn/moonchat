@@ -13,8 +13,9 @@ type Server struct {
 
 //Map protected for concurrency
 var counter = struct{
-    blocker sync.RWMutex
-    users map[string]*ServerProcessor
+	blocker sync.RWMutex
+	rooms map[string]*room
+	users map[string]*ServerProcessor
 }{users: make(map[string]*ServerProcessor)}
 
 const (
@@ -66,6 +67,12 @@ func addUser(username string, processor *ServerProcessor) {
 	toAllUsers(m.GetJSON())
 }
 
+func addRoom(roomname string, room *room) {
+	counter.blocker.Lock()
+	defer counter.blocker.Unlock()
+	counter.rooms["roomname"] = room
+}
+
 func toAllUsers(message []byte) {
 	counter.blocker.RLock()
 	for _, element := range counter.users {
@@ -107,7 +114,7 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 }
 
 //verifies the statatus sent by client.x
-func verifyStatus (status string) (bool) {
+func verifyStatus(status string) (bool) {
 	switch status {
 	case "AWAY": return true
 	case "BUSY": return true
@@ -116,4 +123,40 @@ func verifyStatus (status string) (bool) {
 	}
 }
 
+func verifyRoomName(roomName string) (bool) {
+	counter.blocker.RLock()
+	defer counter.blocker.RUnlock()
+	if _, ok := counter.rooms["roomName"]; ok {
+		return false;
+	}
+	return true;
+}
+
+func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte) {
+	if ok := verifyRoomName(host); ok {
+		var users map[string]*ServerProcessor
+		users["host"] = hostProcessor
+		var blocker sync.RWMutex = sync.RWMutex{}
+		var roomUsers mapCounter = mapCounter{blocker,users}
+		var newRoom room = room{roomUsers, roomname}
+		addRoom(roomname, &newRoom)
+		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: The room has been created succesfully.", message.NEW_ROOM_MESSAGE_TYPE}
+		return succes.GetJSON()
+	}
+	str := fmt.Sprintf("The '%s' already exists.", roomname)
+	fail := message.RoomWarningMessage{message.WARNING_MESSAGE_TYPE, str, message.NEW_ROOM_MESSAGE_TYPE, roomname}
+	return fail.GetJSON()
+}
+
+func inviteUsersToRoom(roomName string, users string) []byte {
+	return nil
+}
+
+func joinRoom(username string, roomName string) []byte {
+	return nil
+}
+
+func getRoomUserList(username string, roomName string) []byte {
+	return nil
+}
 

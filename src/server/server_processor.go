@@ -124,6 +124,18 @@ func (processor *ServerProcessor)processMessage(gottenMessage map[string]string)
 			processor.sendMessage(warning.GetJSON())
 		}
 		break
+	case message.NEW_ROOM_MESSAGE_TYPE:
+		processor.sendMessage(createNewRoom(processor.username, processor, gottenMessage["roomname"]))
+		break
+	case message.INVITE_MESSAGE_TYPE:
+		processor.sendMessage(inviteUsersToRoom(gottenMessage["roomname"], gottenMessage["usernames"]))
+		break
+	case message.JOIN_ROOM_MESSAGE_TYPE:
+		processor.sendMessage(joinRoom(processor.username, gottenMessage["roomname"]))
+		break
+	case message.ROOM_USERS_MESSAGE_TYPE:
+		processor.sendMessage(getRoomUserList(processor.username, gottenMessage["roomname"]))
+		break
 	}
 }
 

@@ -21,6 +21,10 @@ const (
 	USER_LIST_MESSAGE_TYPE = "USER_LIST"
 	MESSAGE_TYPE = "MESSAGE"
 	PRIVATE_MESSAGE_TYPE = "MESSAGE_FROM"
+	NEW_ROOM_MESSAGE_TYPE = "NEW_ROOM"
+	INVITE_MESSAGE_TYPE =  "INVITE"
+	JOIN_ROOM_MESSAGE_TYPE = "JOIN_ROOM"
+	ROOM_USERS_MESSAGE_TYPE = "ROOM_USERS"
 )
 
 type Message interface {
@@ -35,6 +39,21 @@ type ErrorMessageStatus struct {
 }
 
 func (mess ErrorMessageStatus) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
+type RoomWarningMessage struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:"operation"`
+	Roomname string `json:"roomname"`
+}
+
+func (mess RoomWarningMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
