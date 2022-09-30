@@ -95,7 +95,7 @@ func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
 
 
 //processes received messages proceeding in each case as necessary.
-func (processor *ServerProcessor)processMessage(gottenMessage map[string]string) {
+func (processor *ServerProcessor) processMessage(gottenMessage map[string]string) {
 	var typeMessage string = gottenMessage["type"]
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
@@ -125,7 +125,8 @@ func (processor *ServerProcessor)processMessage(gottenMessage map[string]string)
 		}
 		break
 	case message.NEW_ROOM_MESSAGE_TYPE:
-		processor.sendMessage(createNewRoom(processor.username, processor, gottenMessage["roomname"]))
+		message, _ := createNewRoom(processor.username, processor, gottenMessage["roomname"])
+		processor.sendMessage(message)
 		break
 	case message.INVITE_MESSAGE_TYPE:
 		processor.sendMessage(inviteUsersToRoom(gottenMessage["roomname"], gottenMessage["usernames"]))

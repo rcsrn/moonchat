@@ -6,17 +6,20 @@ import(
 	"github.com/rcsrn/moonchat/src/message"
 	"sync"
 	"errors"
+	"strings"
 )
 
 type Server struct {
 }
 
-//Map protected for concurrency
+//Maps protected for concurrency
 var counter = struct{
 	blocker sync.RWMutex
 	rooms map[string]*room
 	users map[string]*ServerProcessor
 }{users: make(map[string]*ServerProcessor)}
+
+
 
 const (
 	SERVER_HOST = "localhost"
@@ -25,6 +28,7 @@ const (
 )
 
 func (server *Server) WaitForConnections() {
+	initRooms()
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
@@ -46,6 +50,10 @@ func (server *Server) WaitForConnections() {
 	}
 }
 
+func initRooms() {
+	counter.rooms = make(map[string]*room)
+}
+
 func checkIdentify(username string, processor *ServerProcessor) []byte {
 	counter.blocker.RLock()
 	if _, ok := counter.users[username]; ok {
@@ -60,17 +68,17 @@ func checkIdentify(username string, processor *ServerProcessor) []byte {
 }
 
 func addUser(username string, processor *ServerProcessor) {
-	//counter.blocker.Lock()
+	counter.blocker.Lock()
 	counter.users[username] = processor
-	//counter.blocker.Unlock()
+	counter.blocker.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
 	toAllUsers(m.GetJSON())
 }
 
 func addRoom(roomname string, room *room) {
-	counter.blocker.Lock()
-	defer counter.blocker.Unlock()
-	counter.rooms["roomname"] = room
+	//counter.blocker.Lock()
+	//defer counter.blocker.Unlock()
+	counter.rooms[roomname] = room
 }
 
 func toAllUsers(message []byte) {
@@ -107,13 +115,13 @@ func sendPrivateMessage(receiver string, messageToSend string, transmitter strin
 func getUserProcessor(userName string)(*ServerProcessor, error){
 	counter.blocker.RLock()
 	defer counter.blocker.RUnlock()
-	if userProcessor, ok := counter.users["userName"]; ok {
+	if userProcessor, ok := counter.users[userName]; ok {
 		return userProcessor, nil
 	}
 	return nil, errors.New("User not found")
 }
 
-//verifies the statatus sent by client.x
+//verifies if the status sent by client is valid.
 func verifyStatus(status string) (bool) {
 	switch status {
 	case "AWAY": return true
@@ -123,29 +131,35 @@ func verifyStatus(status string) (bool) {
 	}
 }
 
+//verifies if the room name is available or not.
 func verifyRoomName(roomName string) (bool) {
 	counter.blocker.RLock()
 	defer counter.blocker.RUnlock()
-	if _, ok := counter.rooms["roomName"]; ok {
+	if _, ok := counter.rooms[roomName]; ok {
 		return false;
 	}
 	return true;
 }
 
-func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte) {
-	if ok := verifyRoomName(host); ok {
-		var users map[string]*ServerProcessor
+
+func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
+	if value := strings.Compare(roomname, ""); value == 0 {
+		return nil, errors.New("Invalid room name")
+	}
+	if ok := verifyRoomName(roomname); ok {
+		var users map[string]*ServerProcessor = make(map[string]*ServerProcessor)
 		users["host"] = hostProcessor
 		var blocker sync.RWMutex = sync.RWMutex{}
 		var roomUsers mapCounter = mapCounter{blocker,users}
 		var newRoom room = room{roomUsers, roomname}
 		addRoom(roomname, &newRoom)
-		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: The room has been created succesfully.", message.NEW_ROOM_MESSAGE_TYPE}
-		return succes.GetJSON()
+		str := fmt.Sprintf("Succes: The room '%s'has been created succesfully.", roomname)
+		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, str, message.NEW_ROOM_MESSAGE_TYPE}
+		return succes.GetJSON(), nil
 	}
 	str := fmt.Sprintf("The '%s' already exists.", roomname)
 	fail := message.RoomWarningMessage{message.WARNING_MESSAGE_TYPE, str, message.NEW_ROOM_MESSAGE_TYPE, roomname}
-	return fail.GetJSON()
+	return fail.GetJSON(), errors.New("Room name already used")
 }
 
 func inviteUsersToRoom(roomName string, users string) []byte {
