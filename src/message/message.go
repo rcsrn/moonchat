@@ -46,6 +46,21 @@ func (mess ErrorMessageStatus) GetJSON() []byte {
 	return message
 }
 
+type ErrorMessageRoom struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:operation"`
+	Roomname string `json:roomname`
+}
+
+func (mess ErrorMessageRoom) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
 type RoomWarningMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
