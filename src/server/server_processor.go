@@ -31,7 +31,7 @@ func (processor *ServerProcessor) readMessages() {
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			if identified {
 				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
-				toAllUsers(disconn.GetJSON())
+				toAllUsers(processor, disconn.GetJSON())
 			}
 			log.Printf("Error: %v\n", err2.Error())
 			processor.disconnectClient()
@@ -59,8 +59,6 @@ func (processor *ServerProcessor) disconnectClient() {
 		counter.blocker.Lock()
 		delete(counter.users, processor.username)
 		counter.blocker.Unlock()
-		mess := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
-		toAllUsers(mess.GetJSON())
 	}
 }
 
@@ -81,17 +79,12 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 	return message, nil
 }
 
-func (processor *ServerProcessor) changeStatus(newStatus string) ([]byte) {
+func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	if accepted := verifyStatus(newStatus); !accepted {
-		mess := message.ErrorMessageStatus{message.ERROR_MESSAGE_TYPE, "Invalid status!", message.STATUS_MESSAGE_TYPE}
-		invalid = true
-		return mess.GetJSON()
+		return false
 	}
-	mess := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "status changed succesfully", message.STATUS_MESSAGE_TYPE}
-	messUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, newStatus}
-	toAllUsers(messUsers.GetJSON())
 	processor.setStatus(newStatus)
-	return mess.GetJSON()
+	return true
 }
 
 
@@ -103,10 +96,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		processor.sendMessage(checkIdentify(gottenMessage["username"], processor))
 		break
 	case message.STATUS_MESSAGE_TYPE:
-		processor.sendMessage(processor.changeStatus(gottenMessage["status"]))
-		if invalid {
-			processor.disconnectClient()
-		}
+		statusCase(processor, gottenMessage["status"])
 		break
 	case message.USERS_MESSAGE_TYPE:
 		processor.sendMessage(getUserList())
@@ -116,7 +106,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		break
 	case message.PUBLIC_MESSAGE_TYPE:
 		publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, processor.username, gottenMessage["message"]}
-		toAllUsers(publicMessage.GetJSON())
+		toAllUsers(processor, publicMessage.GetJSON())
 		break
 	case message.MESSAGE_TYPE:
 		err := sendPrivateMessage(gottenMessage["username"], gottenMessage["message"], processor.username)
@@ -141,5 +131,19 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 	}
 }
 
-
+func statusCase(processor *ServerProcessor, status string) {
+	changedStatus := processor.changeStatus(status)
+	if changedStatus {
+		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "status changed succesfully", message.STATUS_MESSAGE_TYPE}
+		processor.sendMessage(succes.GetJSON())
+		messUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, status}
+		toAllUsers(processor, messUsers.GetJSON())
+	} else {
+		error := message.ErrorMessageStatus{message.ERROR_MESSAGE_TYPE, "Invalid status!", message.STATUS_MESSAGE_TYPE}
+		processor.sendMessage(error.GetJSON())
+		processor.disconnectClient()
+		disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+		toAllUsers(processor, disconn.GetJSON())
+	}
+}
 

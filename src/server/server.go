@@ -33,7 +33,7 @@ func (server *Server) WaitForConnections() {
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
 	if err != nil {
-		fmt.Println("Algo ha salido mal. :(")
+		fmt.Println("Something went wrong. :(")
 	}
 	defer connectionListener.Close()
 	
@@ -73,7 +73,7 @@ func addUser(username string, processor *ServerProcessor) {
 	counter.users[username] = processor
 	counter.blocker.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
-	toAllUsers(m.GetJSON())
+	toAllUsers(processor, m.GetJSON())
 }
 
 func addRoom(roomname string, room *room) {
@@ -82,9 +82,12 @@ func addRoom(roomname string, room *room) {
 	counter.rooms[roomname] = room
 }
 
-func toAllUsers(message []byte) {
+func toAllUsers(processor *ServerProcessor, message []byte) {
 	counter.blocker.RLock()
 	for _, element := range counter.users {
+		if processor == element {
+			continue
+		}
 		element.sendMessage(message)
 	}	
 	counter.blocker.RUnlock()
