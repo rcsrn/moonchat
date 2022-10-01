@@ -57,14 +57,15 @@ func initRooms() {
 func checkIdentify(username string, processor *ServerProcessor) []byte {
 	counter.blocker.RLock()
 	if _, ok := counter.users[username]; ok {
-		m := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "username already used" , message.IDENTIFY_MESSAGE_TYPE, username}
-		return m.GetJSON()
+		str := fmt.Sprintf("username '%s' already used.", username)
+		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str , message.IDENTIFY_MESSAGE_TYPE, username}
+		return warning.GetJSON()
 	}
 	counter.blocker.RUnlock()
 	addUser(username, processor)
 	processor.setUserName(username)
-	m := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
-	return m.GetJSON()
+	succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+	return succes.GetJSON()
 }
 
 func addUser(username string, processor *ServerProcessor) {

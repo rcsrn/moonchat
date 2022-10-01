@@ -20,24 +20,25 @@ var invalid bool
 
 // reads sent messages by client
 func (processor *ServerProcessor) readMessages() {
-	for {	
+	for {
 		buffer := make([]byte, 1024)
-		_, err1 := processor.connection.Read(buffer)
+		length, err1 := processor.connection.Read(buffer)
 		if err1 != nil {
 			fmt.Println("Error while reading:", err1.Error())	
 		}
-		messageRecieved, err2 := processor.unmarshalJSON(buffer)
+		messageRecieved, err2 := processor.unmarshalJSON(buffer[:length])
 		if err2 != nil {
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			if identified {
 				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
 				toAllUsers(disconn.GetJSON())
 			}
-			log.Printf("Error: %v\n", err2)
+			log.Printf("Error: %v\n", err2.Error())
 			processor.disconnectClient()
 			break
 		}
 		processor.processMessage(messageRecieved)
+		fmt.Printf("message received: %v by %v\n", messageRecieved, processor.username)
 	}
 }
 
@@ -72,10 +73,10 @@ func (processor *ServerProcessor) sendMessage(message []byte) {
 
 //unmarshals messages that need to be processed by serverProcessor
 func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, error) {
-	var message map[string]string
+	var message map[string]string 
 	err := json.Unmarshal(j, &message)
 	if err != nil {
-		return nil, err
+		return message, err
 	}
 	return message, nil
 }
