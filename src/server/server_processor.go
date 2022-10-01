@@ -93,7 +93,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 	var typeMessage string = gottenMessage["type"]
 	switch typeMessage {
 	case message.IDENTIFY_MESSAGE_TYPE:
-		processor.sendMessage(checkIdentify(gottenMessage["username"], processor))
+		identifyCase(processor, gottenMessage["username"])
 		break
 	case message.STATUS_MESSAGE_TYPE:
 		statusCase(processor, gottenMessage["status"])
@@ -147,3 +147,16 @@ func statusCase(processor *ServerProcessor, status string) {
 	}
 }
 
+func identifyCase(processor *ServerProcessor, userName string) {
+	userNameAvailable := verifyUserName(userName)
+	if userNameAvailable {
+		addUser(userName, processor)
+		processor.setUserName(userName)
+		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+		processor.sendMessage(succes.GetJSON())
+	} else {
+		str := fmt.Sprintf("username '%s' already used.", userName)
+		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str , message.IDENTIFY_MESSAGE_TYPE, userName}
+		processor.sendMessage(warning.GetJSON())
+	}
+}

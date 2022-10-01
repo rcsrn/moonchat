@@ -54,20 +54,6 @@ func initRooms() {
 	counter.rooms = make(map[string]*room)
 }
 
-func checkIdentify(username string, processor *ServerProcessor) []byte {
-	counter.blocker.RLock()
-	if _, ok := counter.users[username]; ok {
-		str := fmt.Sprintf("username '%s' already used.", username)
-		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str , message.IDENTIFY_MESSAGE_TYPE, username}
-		return warning.GetJSON()
-	}
-	counter.blocker.RUnlock()
-	addUser(username, processor)
-	processor.setUserName(username)
-	succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
-	return succes.GetJSON()
-}
-
 func addUser(username string, processor *ServerProcessor) {
 	counter.blocker.Lock()
 	counter.users[username] = processor
@@ -82,6 +68,7 @@ func addRoom(roomname string, room *room) {
 	counter.rooms[roomname] = room
 }
 
+//sends a message just to users that have been added.
 func toAllUsers(processor *ServerProcessor, message []byte) {
 	counter.blocker.RLock()
 	for _, element := range counter.users {
@@ -123,6 +110,15 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 		return userProcessor, nil
 	}
 	return nil, errors.New("User not found")
+}
+
+func verifyUserName(userName string) bool {
+	counter.blocker.RLock()
+	if _, ok := counter.users[userName]; ok {
+		return false
+	}
+	counter.blocker.RUnlock()
+	return true
 }
 
 //verifies if the status sent by client is valid.
