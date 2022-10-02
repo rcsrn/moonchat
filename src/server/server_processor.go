@@ -13,30 +13,42 @@ type ServerProcessor struct {
 	connection net.Conn
 	username string
 	userStatus string
+	identified bool
+	invalid bool
 }
 
-var identified bool
-var invalid bool
 
 // reads sent messages by client
 func (processor *ServerProcessor) readMessages() {
 	for {
 		buffer := make([]byte, 1024)
 		length, err1 := processor.connection.Read(buffer)
+		
 		if err1 != nil {
-			fmt.Println("Error while reading:", err1.Error())	
-		}
-		messageRecieved, err2 := processor.unmarshalJSON(buffer[:length])
-		if err2 != nil {
-			processor.sendMessage([]byte("Sorry, bad operation...\n"))
-			if identified {
-				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
-				toAllUsers(processor, disconn.GetJSON())
-			}
-			log.Printf("Error: %v\n", err2.Error())
+			fmt.Println("Error while reading:", err1.Error())
+			processor.sendMessage([]byte("Sorry, something went wrong :(\n"))
 			processor.disconnectClient()
 			break
 		}
+		
+		messageRecieved, err2 := processor.unmarshalJSON(buffer[:length])
+		
+		if err2 != nil {
+			processor.sendMessage([]byte("Sorry, bad operation...\n"))
+			processor.disconnectClient()
+			if processor.identified {
+				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+				toAllUsers(processor, disconn.GetJSON())
+			}
+			log.Printf("Error while unmarshaling: %v\n", err2.Error())
+			if processor.identified == true {
+				log.Printf("Client '%s' disconnected", processor.username)
+			} else {
+				log.Printf("Client disconnected")
+			}
+			break
+		}
+		
 		processor.processMessage(messageRecieved)
 		fmt.Printf("message received: %v by %v\n", messageRecieved, processor.username)
 	}
@@ -45,7 +57,7 @@ func (processor *ServerProcessor) readMessages() {
 //sets the username to the client once it has been identified.
 func (processor *ServerProcessor) setUserName(name string) {
 	processor.username = name
-	identified = true
+	processor.identified = true
 }
 
 func (processor *ServerProcessor) setUserStatus(newStatus string) {
@@ -128,7 +140,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 
 func statusCase(processor *ServerProcessor, newStatus string) {
 	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
-		str := fmt.Sprintf("El estado actual es '%s'. Favor de elegir otro.", processor.userStatus)
+		str := fmt.Sprintf("The current status is '%s'. Please select other.", processor.userStatus)
 		warning := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, str, message.STATUS_MESSAGE_TYPE, processor.userStatus}
 		processor.sendMessage(warning.GetJSON())
 		return
@@ -150,8 +162,8 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 }
 
 func identifyCase(processor *ServerProcessor, userName string) {
-	userNameAvailable := verifyUserName(userName)
-	if userNameAvailable {
+	TheUserNameIsAvailable := verifyUserName(userName)
+	if TheUserNameIsAvailable {
 		addUser(userName, processor)
 		processor.setUserName(userName)
 		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}

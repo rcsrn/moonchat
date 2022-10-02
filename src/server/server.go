@@ -45,7 +45,7 @@ func (server *Server) WaitForConnections() {
 		}
 		fmt.Println("Client connected from", connection.RemoteAddr())
 		//ACTIVE status is added by default
-		serverProcessor := ServerProcessor{connection, "", "ACTIVE"}
+		serverProcessor := ServerProcessor{connection, "", "ACTIVE", false, false}
 		go serverProcessor.readMessages()
 	}
 }
