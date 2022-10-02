@@ -12,7 +12,7 @@ import (
 type ServerProcessor struct {
 	connection net.Conn
 	username string
-	status string
+	userStatus string
 }
 
 var identified bool
@@ -48,8 +48,8 @@ func (processor *ServerProcessor) setUserName(name string) {
 	identified = true
 }
 
-func (processor *ServerProcessor) setStatus(newStatus string) {
-	processor.status = newStatus
+func (processor *ServerProcessor) setUserStatus(newStatus string) {
+	processor.userStatus = newStatus
 }
 
 //disconnects the client when it sends a message out the protocol.
@@ -83,7 +83,7 @@ func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	if accepted := verifyStatus(newStatus); !accepted {
 		return false
 	}
-	processor.setStatus(newStatus)
+	processor.setUserStatus(newStatus)
 	return true
 }
 
@@ -99,21 +99,16 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		statusCase(processor, gottenMessage["status"])
 		break
 	case message.USERS_MESSAGE_TYPE:
-		processor.sendMessage(getUserList())
+		userListCase(processor)
 		break
 	case message.DISCONNECT_MESSAGE_TYPE:
-		processor.disconnectClient()
+		disconnectClientCase(processor)
 		break
 	case message.PUBLIC_MESSAGE_TYPE:
-		publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, processor.username, gottenMessage["message"]}
-		toAllUsers(processor, publicMessage.GetJSON())
+		publicMessageCase(processor, gottenMessage["message"])
 		break
 	case message.MESSAGE_TYPE:
-		err := sendPrivateMessage(gottenMessage["username"], gottenMessage["message"], processor.username)
-		if err != nil {
-			warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "the user received does not exist", message.MESSAGE_TYPE, gottenMessage["username"]}
-			processor.sendMessage(warning.GetJSON())
-		}
+		privateMessageCase(processor, gottenMessage["username"], gottenMessage["message"])
 		break
 	case message.NEW_ROOM_MESSAGE_TYPE:
 		message, _ := createNewRoom(processor.username, processor, gottenMessage["roomname"])
@@ -131,19 +126,26 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 	}
 }
 
-func statusCase(processor *ServerProcessor, status string) {
-	changedStatus := processor.changeStatus(status)
+func statusCase(processor *ServerProcessor, newStatus string) {
+	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
+		str := fmt.Sprintf("El estado actual es '%s'. Favor de elegir otro.", processor.userStatus)
+		warning := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, str, message.STATUS_MESSAGE_TYPE, processor.userStatus}
+		processor.sendMessage(warning.GetJSON())
+		return
+	}
+	
+	changedStatus := processor.changeStatus(newStatus)
 	if changedStatus {
-		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "status changed succesfully", message.STATUS_MESSAGE_TYPE}
+		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: status changed succesfully", message.STATUS_MESSAGE_TYPE}
 		processor.sendMessage(succes.GetJSON())
-		messUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, status}
-		toAllUsers(processor, messUsers.GetJSON())
+		messageToUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, newStatus}
+		toAllUsers(processor, messageToUsers.GetJSON())
 	} else {
 		error := message.ErrorMessageStatus{message.ERROR_MESSAGE_TYPE, "Invalid status!", message.STATUS_MESSAGE_TYPE}
 		processor.sendMessage(error.GetJSON())
 		processor.disconnectClient()
-		disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
-		toAllUsers(processor, disconn.GetJSON())
+		messageToUsers := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+		toAllUsers(processor, messageToUsers.GetJSON())
 	}
 }
 
@@ -157,6 +159,31 @@ func identifyCase(processor *ServerProcessor, userName string) {
 	} else {
 		str := fmt.Sprintf("username '%s' already used.", userName)
 		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str , message.IDENTIFY_MESSAGE_TYPE, userName}
+		processor.sendMessage(warning.GetJSON())
+	}
+}
+
+func userListCase(processor *ServerProcessor) {
+	list := getUserList()
+	processor.sendMessage(list)
+}
+
+func disconnectClientCase(processor *ServerProcessor) {
+	processor.disconnectClient()
+	disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+	toAllUsers(processor, disconn.GetJSON())
+}
+
+func publicMessageCase(processor *ServerProcessor, public string) {
+	publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, processor.username, public}
+	toAllUsers(processor, publicMessage.GetJSON())	
+}
+
+func privateMessageCase(processor *ServerProcessor, receptor string, privateMessage string) {
+	err := sendPrivateMessage(receptor, privateMessage, processor.username)
+	if err != nil {
+		str := fmt.Sprintf("the user '%v' does not exist", receptor)
+		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str, message.MESSAGE_TYPE, receptor}
 		processor.sendMessage(warning.GetJSON())
 	}
 }

@@ -92,8 +92,8 @@ func getUserList() []byte {
 	return mess.GetJSON()
 }
 
-func sendPrivateMessage(receiver string, messageToSend string, transmitter string) (error){
-	userProcess, err := getUserProcessor(receiver)
+func sendPrivateMessage(receptor string, messageToSend string, transmitter string) (error){
+	userProcess, err := getUserProcessor(receptor)
 	if err != nil {
 		return err
 	}
