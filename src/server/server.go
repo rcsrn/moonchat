@@ -45,7 +45,7 @@ func (server *Server) WaitForConnections() {
 		}
 		fmt.Println("Client connected from", connection.RemoteAddr())
 		//ACTIVE status is added by default
-		serverProcessor := ServerProcessor{connection, "", "ACTIVE", false, false}
+		serverProcessor := ServerProcessor{connection, "", "ACTIVE", false}
 		go serverProcessor.readMessages()
 	}
 }
@@ -55,17 +55,21 @@ func initRooms() {
 }
 
 func addUser(username string, processor *ServerProcessor) {
-	counter.blocker.Lock()
+	fmt.Println("MINIMO LLEGO ACAasasdasdsd1111111111")
+	//counter.blocker.Lock()
+	fmt.Println("MINIMO LLEGO ACAasasdasdsd2222222")
 	counter.users[username] = processor
-	counter.blocker.Unlock()
+	//counter.blocker.Unlock()
+	fmt.Println("MINIMO LLEGO ACAasasdasd33333333")
 	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
 	toAllUsers(processor, m.GetJSON())
+	fmt.Println("MINIMO LLEGO ACAasasdasdsd44444444")
 }
 
 func addRoom(roomname string, room *room) {
-	//counter.blocker.Lock()
-	//defer counter.blocker.Unlock()
+	counter.blocker.Lock()
 	counter.rooms[roomname] = room
+	counter.blocker.Unlock()
 }
 
 //sends a message just to users that have been added.
@@ -105,10 +109,10 @@ func sendPrivateMessage(receptor string, messageToSend string, transmitter strin
 //gets the user received
 func getUserProcessor(userName string)(*ServerProcessor, error){
 	counter.blocker.RLock()
-	defer counter.blocker.RUnlock()
 	if userProcessor, ok := counter.users[userName]; ok {
 		return userProcessor, nil
 	}
+	counter.blocker.RUnlock()
 	return nil, errors.New("User not found")
 }
 
@@ -134,10 +138,11 @@ func verifyStatus(status string) (bool) {
 //verifies if the room name is available or not.
 func verifyRoomName(roomName string) (bool) {
 	counter.blocker.RLock()
-	defer counter.blocker.RUnlock()
+	counter.blocker.RUnlock()
 	if _, ok := counter.rooms[roomName]; ok {
 		return false;
 	}
+	counter.blocker.RUnlock()
 	return true;
 }
 

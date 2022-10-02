@@ -14,7 +14,6 @@ type ServerProcessor struct {
 	username string
 	userStatus string
 	identified bool
-	invalid bool
 }
 
 
@@ -163,6 +162,7 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 
 func identifyCase(processor *ServerProcessor, userName string) {
 	TheUserNameIsAvailable := verifyUserName(userName)
+	fmt.Println(TheUserNameIsAvailable)
 	if TheUserNameIsAvailable {
 		addUser(userName, processor)
 		processor.setUserName(userName)
