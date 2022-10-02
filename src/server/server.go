@@ -6,7 +6,7 @@ import(
 	"github.com/rcsrn/moonchat/src/message"
 	"sync"
 	"errors"
-	"strings"
+	"strings"	
 )
 
 type Server struct {
@@ -55,15 +55,13 @@ func initRooms() {
 }
 
 func addUser(username string, processor *ServerProcessor) {
-	fmt.Println("MINIMO LLEGO ACAasasdasdsd1111111111")
-	//counter.blocker.Lock()
-	fmt.Println("MINIMO LLEGO ACAasasdasdsd2222222")
+	fmt.Println("Here it is : 1")
+	counter.blocker.Lock()
+	fmt.Println("Here it is : 2")
 	counter.users[username] = processor
-	//counter.blocker.Unlock()
-	fmt.Println("MINIMO LLEGO ACAasasdasd33333333")
+	counter.blocker.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
 	toAllUsers(processor, m.GetJSON())
-	fmt.Println("MINIMO LLEGO ACAasasdasdsd44444444")
 }
 
 func addRoom(roomname string, room *room) {
