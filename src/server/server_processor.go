@@ -36,7 +36,7 @@ func (processor *ServerProcessor) readMessages() {
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			processor.disconnectClient()
 			if processor.identified {
-				disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+				disconn := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
 				toAllUsers(processor, disconn.GetJSON())
 			}
 			log.Printf("Error while unmarshaling: %v\n", err2.Error())
@@ -103,34 +103,34 @@ func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 func (processor *ServerProcessor) processMessage(gottenMessage map[string]string) {
 	var typeMessage string = gottenMessage["type"]
 	switch typeMessage {
-	case message.IDENTIFY_MESSAGE_TYPE:
+	case message.IDENTIFY_TYPE:
 		identifyCase(processor, gottenMessage["username"])
 		break
-	case message.STATUS_MESSAGE_TYPE:
+	case message.STATUS_TYPE:
 		statusCase(processor, gottenMessage["status"])
 		break
-	case message.USERS_MESSAGE_TYPE:
+	case message.USERS_TYPE:
 		userListCase(processor)
 		break
-	case message.DISCONNECT_MESSAGE_TYPE:
+	case message.DISCONNECT_TYPE:
 		disconnectClientCase(processor)
 		break
-	case message.PUBLIC_MESSAGE_TYPE:
+	case message.PUBLIC_TYPE:
 		publicMessageCase(processor, gottenMessage["message"])
 		break
 	case message.MESSAGE_TYPE:
 		privateMessageCase(processor, gottenMessage["username"], gottenMessage["message"])
 		break
-	case message.NEW_ROOM_MESSAGE_TYPE:
+	case message.NEW_ROOM_TYPE:
 		newRoomCase(processor, gottenMessage["roomname"])
 		break
-	case message.INVITE_MESSAGE_TYPE:
+	case message.INVITE_TYPE:
 		inviteToRoomCase(processor, gottenMessage["roomname"], gottenMessage["usernames"])
 		break
-	case message.JOIN_ROOM_MESSAGE_TYPE:
+	case message.JOIN_ROOM_TYPE:
 		joinRoomCase(processor, gottenMessage["roomname"])
 		break
-	case message.ROOM_USERS_MESSAGE_TYPE:
+	case message.ROOM_USERS_TYPE:
 		roomUsersCase(processor, gottenMessage["roomname"])
 		break
 	}
@@ -139,22 +139,22 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 func statusCase(processor *ServerProcessor, newStatus string) {
 	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
 		str := fmt.Sprintf("The current status is '%s'. Please select other.", processor.userStatus)
-		warning := message.WarningMessageStatus{message.WARNING_MESSAGE_TYPE, str, message.STATUS_MESSAGE_TYPE, processor.userStatus}
+		warning := message.WarningMessageStatus{message.WARNING_TYPE, str, message.STATUS_TYPE, processor.userStatus}
 		processor.sendMessage(warning.GetJSON())
 		return
 	}
 	
 	changedStatus := processor.changeStatus(newStatus)
 	if changedStatus {
-		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: status changed succesfully", message.STATUS_MESSAGE_TYPE}
+		succes := message.SuccesMessage{message.INFO_TYPE, "Succes: status changed succesfully", message.STATUS_TYPE}
 		processor.sendMessage(succes.GetJSON())
-		messageToUsers := message.NewStatusMessage{message.NEW_STATUS_MESSAGE_TYPE, processor.username, newStatus}
+		messageToUsers := message.NewStatusMessage{message.NEW_STATUS_TYPE, processor.username, newStatus}
 		toAllUsers(processor, messageToUsers.GetJSON())
 	} else {
-		error := message.ErrorMessageStatus{message.ERROR_MESSAGE_TYPE, "Invalid status!", message.STATUS_MESSAGE_TYPE}
+		error := message.ErrorMessageStatus{message.ERROR_TYPE, "Invalid status!", message.STATUS_TYPE}
 		processor.sendMessage(error.GetJSON())
 		processor.disconnectClient()
-		messageToUsers := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+		messageToUsers := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
 		toAllUsers(processor, messageToUsers.GetJSON())
 	}
 }
@@ -165,11 +165,11 @@ func identifyCase(processor *ServerProcessor, userName string) {
 	if TheUserNameIsAvailable {
 		addUser(userName, processor)
 		processor.setUserName(userName)
-		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
+		succes := message.SuccesMessage{message.INFO_TYPE, "Succes: username has been saved", message.IDENTIFY_TYPE}
 		processor.sendMessage(succes.GetJSON())
 	} else {
 		str := fmt.Sprintf("username '%s' already used.", userName)
-		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str , message.IDENTIFY_MESSAGE_TYPE, userName}
+		warning := message.WarningMessageUsername{message.WARNING_TYPE, str , message.IDENTIFY_TYPE, userName}
 		processor.sendMessage(warning.GetJSON())
 	}
 }
@@ -181,7 +181,7 @@ func userListCase(processor *ServerProcessor) {
 
 func disconnectClientCase(processor *ServerProcessor) {
 	processor.disconnectClient()
-	disconn := message.DisconnectedMessage{message.DISCONNECTED_MESSAGE_TYPE, processor.username}
+	disconn := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
 	toAllUsers(processor, disconn.GetJSON())
 }
 
@@ -194,7 +194,7 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 	err := sendPrivateMessage(receptor, privateMessage, processor.username)
 	if err != nil {
 		str := fmt.Sprintf("the user '%v' does not exist", receptor)
-		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, str, message.MESSAGE_TYPE, receptor}
+		warning := message.WarningMessageUsername{message.WARNING_TYPE, str, message.MESSAGE_TYPE, receptor}
 		processor.sendMessage(warning.GetJSON())
 	}
 }
@@ -208,7 +208,7 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 	usersToInvite := toArrayOfUsers(users)
 	if theyAllExist, user := verifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
-		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, warningStr, message.INVITE_MESSAGE_TYPE, user}
+		warning := message.WarningMessageUsername{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
 		processor.sendMessage(warning.GetJSON())
 	}
 	processor.sendMessage(inviteUsersToRoom(processor.username, roomName, usersToInvite))

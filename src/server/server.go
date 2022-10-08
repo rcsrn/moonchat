@@ -60,7 +60,7 @@ func addUser(username string, processor *ServerProcessor) {
 	fmt.Println("Here it is : 2")
 	counter.users[username] = processor
 	counter.blocker.Unlock()
-	m := message.NewUserMessage{message.NEW_USER_MESSAGE_TYPE, username}
+	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
 	toAllUsers(processor, m.GetJSON())
 }
 
@@ -90,7 +90,7 @@ func getUserList() []byte {
 		listOfUsers = append(listOfUsers, username)
 	}
 	counter.blocker.RUnlock()
-	mess := message.UserList{message.USER_LIST_MESSAGE_TYPE, listOfUsers}
+	mess := message.UserList{message.USER_LIST_TYPE, listOfUsers}
 	return mess.GetJSON()
 }
 
@@ -99,7 +99,7 @@ func sendPrivateMessage(receptor string, messageToSend string, transmitter strin
 	if err != nil {
 		return err
 	}
-	privateMessage := message.NewMessage{message.PRIVATE_MESSAGE_TYPE, transmitter, messageToSend}
+	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, messageToSend}
 	userProcess.sendMessage(privateMessage.GetJSON())
 	return nil
 }
@@ -166,11 +166,11 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string)
 		var newRoom room = room{roomUsers, roomname}
 		addRoom(roomname, &newRoom)
 		str := fmt.Sprintf("Succes: The room '%s'has been created succesfully.", roomname)
-		succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, str, message.NEW_ROOM_MESSAGE_TYPE}
+		succes := message.SuccesMessage{message.INFO_TYPE, str, message.NEW_ROOM_TYPE}
 		return succes.GetJSON(), nil
 	}
 	str := fmt.Sprintf("The '%s' already exists.", roomname)
-	fail := message.RoomWarningMessage{message.WARNING_MESSAGE_TYPE, str, message.NEW_ROOM_MESSAGE_TYPE, roomname}
+	fail := message.RoomWarningMessage{message.WARNING_TYPE, str, message.NEW_ROOM_TYPE, roomname}
 	return fail.GetJSON(), errors.New("Room name already used")
 }
 
@@ -181,13 +181,13 @@ func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []b
 	
 	if err != nil {
 		warningString := fmt.Sprintf("The room '%s' does not exist.", roomName)
-		warning := message.WarningMessageRoom{message.WARNING_MESSAGE_TYPE, warningString, message.INVITE_MESSAGE_TYPE, roomName}
+		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.INVITE_TYPE, roomName}
 		return warning.GetJSON()
 	}
 	
 	if isMember := room.verifyRoomMember(host); !isMember {
 		warningString := fmt.Sprintf("The user is not a member of the room '%s'", roomName)
-		warning := message.WarningMessageRoom{message.WARNING_MESSAGE_TYPE, warningString, message.ROOM_USERS_MESSAGE_TYPE, roomName}
+		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.ROOM_USERS_TYPE, roomName}
 		return warning.GetJSON()
 	}
 	return nil
@@ -201,3 +201,4 @@ func getRoomUserList(username string, roomName string) []byte {
 	return nil
 }
 
+ 
