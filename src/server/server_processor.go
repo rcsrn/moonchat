@@ -161,7 +161,7 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 
 func identifyCase(processor *ServerProcessor, userName string) {
 	TheUserNameIsAvailable := verifyUserName(userName)
-	fmt.Println(TheUserNameIsAvailable)
+
 	if TheUserNameIsAvailable {
 		addUser(userName, processor)
 		processor.setUserName(userName)
@@ -210,6 +210,7 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
 		warning := message.WarningMessageUsername{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
 		processor.sendMessage(warning.GetJSON())
+		return
 	}
 	processor.sendMessage(inviteUsersToRoom(processor.username, roomName, usersToInvite))
 }
@@ -222,12 +223,13 @@ func roomUsersCase(processor *ServerProcessor, roomName string) {
 	processor.sendMessage(getRoomUserList(processor.username, roomName))
 }
 
-//auxiliar function to convert this line to map 
+//auxiliar function to convert this line to an array of users. 
 func toArrayOfUsers(line string) ([]string){
-	line = line[0:len(line) - 1]
+	line = line[1:len(line) - 1]
 	lines := strings.Split(line, ",")
 	for i := 0; i < len(lines); i++ {
-		lines[i] = lines[i][0:len(lines[i])]
+		lines[i] = strings.Trim(lines[i], " ")
+		lines[i] = lines[i][1:len(lines[i])]
 	}
 	return lines
 }

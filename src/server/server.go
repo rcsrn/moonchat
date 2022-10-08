@@ -55,9 +55,7 @@ func initRooms() {
 }
 
 func addUser(username string, processor *ServerProcessor) {
-	fmt.Println("Here it is : 1")
 	counter.blocker.Lock()
-	fmt.Println("Here it is : 2")
 	counter.users[username] = processor
 	counter.blocker.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
@@ -150,9 +148,13 @@ func verifyRoomName(roomName string) (bool) {
 }
 
 func verifyIdentifiedUsers(users []string) (bool, string) {
-	return false , ""
+	for i := 0; i < len(users); i++ {
+		if _, itExists := counter.users[users[i]]; !itExists {
+			return false, users[i]
+		}
+	}
+	return true, ""
 }
-
 
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
 	if value := strings.Compare(roomname, ""); value == 0 {

@@ -190,7 +190,7 @@ func (mess DisconnectedMessage) GetJSON() []byte {
 
 type UserList struct {
 	Type string `json:type`
-	Usernames []string `json:username`	
+	Usernames []string `json:usernames`	
 }
 
 func (mess UserList) GetJSON() []byte {
