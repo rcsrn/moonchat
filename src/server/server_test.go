@@ -34,20 +34,7 @@ func fillUserList() {
 //Test for adding a new user 
 func TestAddUser(t *testing.T) {
 	cleanUserMap()
-	processor1 := ServerProcessor{}
-	processor2 := ServerProcessor{}
-	processor3 := ServerProcessor{}
-
-	counter.users["Juan"] = &processor1
-	counter.users["Brayan"] = &processor2
-	counter.users["Pedro"] = &processor3
-
-	if length := len(counter.users); length == 0 {
-		t.Errorf("User has not been added to autentificated users")
-	}
-	if counter.users["Juan"] != &processor1 || counter.users["Brayan"] != &processor2 || counter.users["Pedro"] != &processor3 {
-		t.Errorf("FAIL")
-	}	
+	fillUserList()	
 }
 
 func TestGetUserProcessor(t *testing.T) {
@@ -101,7 +88,7 @@ func TestCreateNewRoom(t *testing.T) {
 	_ , err1:= createNewRoom("Juan", counter.users["Juan"], "")
 
 	if err1 == nil {
-		t.Errorf("FAIL: This should not happen.")
+		t.Errorf("FAIL: Invalid room name.")
 	}
 
 	str1:= fmt.Sprintf("Succes: The room '%s'has been created succesfully.", "SALA100")
@@ -151,6 +138,19 @@ func TestCreateNewRoom(t *testing.T) {
 }
 
 func TestJoinRoom(t *testing.T) {
+	if error := joinRoom("", ""); error == nil {
+		t.Errorf("FAIL: both invalid name of room and user.")
+	}
+	if error := joinRoom("", "Juan"); error == nil {
+		t.Errorf("FAIL: invalid room name.")
+	}
+	if error := joinRoom("SALA1", "Jack"); error == nil {
+		t.Errorf("FAIL: user is not in identified list.")
+	}
+	if error := joinRoom("SALA1", "Juan"); error == nil {
+		t.Errorf("FAIL: the user has not been invited to room.")
+	}
+	//FALTA EL CASO CUANDO SI ESTA INVITADO
 }
 
 func TestVerifyUserName(t *testing.T) {

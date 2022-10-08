@@ -208,11 +208,18 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 	usersToInvite := toArrayOfUsers(users)
 	if theyAllExist, user := verifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
-		warning := message.WarningMessageUsername{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
-		processor.sendMessage(warning.GetJSON())
+		warningMessage := message.WarningMessageUsername{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
+		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
-	processor.sendMessage(inviteUsersToRoom(processor.username, roomName, usersToInvite))
+	error:= inviteUsersToRoom(processor.username, roomName, usersToInvite)
+	if error != nil {
+		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, error.Error(), message.INVITE_TYPE, roomName}
+		processor.sendMessage(warningMessage.GetJSON())
+		return
+	}
+	succesMessage := message.RoomInfoMessage{message.INFO_TYPE, "Succes: users have been invited to room", message.INVITE_TYPE, roomName}
+	processor.sendMessage(succesMessage.GetJSON())
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {

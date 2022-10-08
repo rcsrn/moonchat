@@ -181,22 +181,36 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string)
 	return fail.GetJSON(), errors.New("Room name already used")
 }
 
-func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []byte {
+func inviteUsersToRoom(host string, roomName string, usersToInvite []string) (error) {
 	room, err := getRoom(roomName)
 	
 	if err != nil {
-		warningString := fmt.Sprintf("The room '%s' does not exist.", roomName)
-		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.INVITE_TYPE, roomName}
-		return warning.GetJSON()
+		errorString := fmt.Sprintf("The room '%s' does not exist.", roomName)
+		return errors.New(errorString)
 	}
-	
 	if isMember := room.verifyRoomMember(host); !isMember {
-		warningString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
-		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.ROOM_USERS_TYPE, roomName}
-		return warning.GetJSON()
+		errorString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
+		return errors.New(errorString)
 	}
-	return nil
+	return errors.New("")
 }
+
+// func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []byte {
+// 	room, err := getRoom(roomName)
+	
+// 	if err != nil {
+// 		warningString := fmt.Sprintf("The room '%s' does not exist.", roomName)
+// 		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.INVITE_TYPE, roomName}
+// 		return warning.GetJSON()
+// 	}
+	
+// 	if isMember := room.verifyRoomMember(host); !isMember {
+// 		warningString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
+// 		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.ROOM_USERS_TYPE, roomName}
+// 		return warning.GetJSON()
+// 	}
+// 	return nil
+// }
 
 func joinRoom(userName string, roomName string) (error) {
 	room, error := getRoom(roomName)
