@@ -12,7 +12,7 @@ var testProcessor ServerProcessor;
 
 func TestUnmarshalJSON(t *testing.T) {	
 	testProcessor = ServerProcessor{}
-	var m message.SuccesMessage = message.SuccesMessage{message.INFO_MESSAGE_TYPE, "this is test", message.IDENTIFY_MESSAGE_TYPE}
+	var m message.SuccesMessage = message.SuccesMessage{message.INFO_TYPE, "this is test", message.IDENTIFY_TYPE}
 	
 	jsonMessage, err1 := json.Marshal(m)
 	

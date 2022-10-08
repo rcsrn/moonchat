@@ -113,8 +113,12 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 }
 
 
-func getRoom(roomName string)(*room, error) {
-	return nil, nil
+func getRoom(roomName string) (*room, error) {
+	room, itExists := counter.rooms[roomName]
+	if !itExists {
+		return nil, errors.New("The room does not exist.")
+	}
+	return room, nil
 }
 
 func verifyUserName(userName string) bool {
@@ -176,8 +180,6 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string)
 	return fail.GetJSON(), errors.New("Room name already used")
 }
 
-
-
 func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []byte {
 	room, err := getRoom(roomName)
 	
@@ -200,7 +202,14 @@ func joinRoom(username string, roomName string) []byte {
 }
 
 func getRoomUserList(username string, roomName string) []byte {
-	return nil
+	room, err := getRoom(roomName)
+	if err != nil {
+		
+	}
+	if isMember := room.verifyRoomMember(username); !isMember {
+		
+	}
+	return room.getMemberList()
 }
 
  

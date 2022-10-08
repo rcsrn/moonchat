@@ -68,39 +68,6 @@ func TestGetRoom(t *testing.T) {
 }
 
 
-// func TestGetUserList(t *testing.T) {	
-// 	cleanUserMap()
-// 	fillUserList()
-// 	gottenUserList := getUserList()
-// 	var users []string
-
-// 	for username, _ := range counter.users{
-// 		users = append(users, username)
-// 	}
-
-// 	var lines map[string]string 
-// 	err1 := json.Unmarshal(gottenUserList, &lines)
-
-// 	if err1 != nil {
-// 		t.Errorf("This should not happen %v", err1.Error())
-// 	}
-	
-// 	userList := message.UserList{message.USER_LIST_MESSAGE_TYPE, users}
-// 	userListJson := userList.GetJSON()
-	
-// 	var rightLines map[string]string
-// 	err2 := json.Unmarshal(userListJson, &rightLines)
-	
-// 	if err2 != nil {
-// 		t.Errorf("This should not happen %v", err2.Error())
-// 	}
-
-// 	if theyAreEqual := reflect.DeepEqual(lines, rightLines); !theyAreEqual {
-// 		t.Errorf("The gotten list is %v and it must be %v", string(gottenUserList), string(userListJson))
-// 	}
-// }
-
-
 func compareAllStrings(lines []string, element string) (bool){
 	for i := 0 ; i < len(lines); i++ {
 		if value:= strings.Compare(lines[i], element); value == 0 {
@@ -138,7 +105,7 @@ func TestCreateNewRoom(t *testing.T) {
 	}
 
 	str1:= fmt.Sprintf("Succes: The room '%s'has been created succesfully.", "SALA100")
-	succes := message.SuccesMessage{message.INFO_MESSAGE_TYPE, str1, message.NEW_ROOM_MESSAGE_TYPE}
+	succes := message.SuccesMessage{message.INFO_TYPE, str1, message.NEW_ROOM_TYPE}
 	succesMessage := succes.GetJSON()
 	
 	gottenMessage1, err2 := createNewRoom("Juan", counter.users["Juan"], "SALA100")
@@ -168,7 +135,7 @@ func TestCreateNewRoom(t *testing.T) {
 
 	str2 := fmt.Sprintf("The '%s' already exists.", "SALA100")
 
-	fail := message.RoomWarningMessage{message.WARNING_MESSAGE_TYPE, str2, message.NEW_ROOM_MESSAGE_TYPE, "SALA100"}
+	fail := message.RoomWarningMessage{message.WARNING_TYPE, str2, message.NEW_ROOM_TYPE, "SALA100"}
 
 	failMessage := fail.GetJSON()
 	
@@ -184,11 +151,6 @@ func TestCreateNewRoom(t *testing.T) {
 }
 
 func TestJoinRoom(t *testing.T) {
-}
-
-func TestInviteUsersToRoom(t *testing.T) {
-	//newRoom := room{}
-	
 }
 
 func TestVerifyUserName(t *testing.T) {
@@ -224,3 +186,31 @@ func TestVerifyStatus(t *testing.T) {
 		t.Error("FAIL")
 	}
 }
+
+func TestVerifyIdentifiedUsers(t *testing.T) {
+	cleanUserMap()
+	fillUserList()
+	usersToVerify := make([]string, 3)
+	if theyAllExist, user := verifyIdentifiedUsers(usersToVerify); theyAllExist || strings.Compare(user, "") != 0 {
+		t.Errorf("This should not be happen.")
+	}
+	fillUserArray(usersToVerify)
+	fillUserList()
+	if theyAllExist, user := verifyIdentifiedUsers(usersToVerify); theyAllExist || strings.Compare(user, "") == 0 {
+		t.Errorf("This should not be happen.")
+	}
+	cleanUserMap()
+	counter.users["Kimberly"] = nil
+	counter.users["Jack"] = nil
+	counter.users["Pepe"] = nil
+	if theyAllExist, user := verifyIdentifiedUsers(usersToVerify); !theyAllExist || strings.Compare(user, "") != 0 {
+		t.Errorf("This should not be happen.")
+	}
+}
+
+func fillUserArray(users []string) {
+	users[0] = "Kimberly"
+	users[1] = "Pepe"
+	users[2] = "Jack"
+}
+ 
