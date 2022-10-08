@@ -139,7 +139,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 func statusCase(processor *ServerProcessor, newStatus string) {
 	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
 		str := fmt.Sprintf("The current status is '%s'. Please select other.", processor.userStatus)
-		warning := message.WarningMessageStatus{message.WARNING_TYPE, str, message.STATUS_TYPE, processor.userStatus}
+		warning := message.StatusWarningMessage{message.WARNING_TYPE, str, message.STATUS_TYPE, processor.userStatus}
 		processor.sendMessage(warning.GetJSON())
 		return
 	}
@@ -169,7 +169,7 @@ func identifyCase(processor *ServerProcessor, userName string) {
 		processor.sendMessage(succes.GetJSON())
 	} else {
 		str := fmt.Sprintf("username '%s' already used.", userName)
-		warning := message.WarningMessageUsername{message.WARNING_TYPE, str , message.IDENTIFY_TYPE, userName}
+		warning := message.UsernameWarningMessage{message.WARNING_TYPE, str , message.IDENTIFY_TYPE, userName}
 		processor.sendMessage(warning.GetJSON())
 	}
 }
@@ -194,7 +194,7 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 	err := sendPrivateMessage(receptor, privateMessage, processor.username)
 	if err != nil {
 		str := fmt.Sprintf("the user '%v' does not exist", receptor)
-		warning := message.WarningMessageUsername{message.WARNING_TYPE, str, message.MESSAGE_TYPE, receptor}
+		warning := message.UsernameWarningMessage{message.WARNING_TYPE, str, message.MESSAGE_TYPE, receptor}
 		processor.sendMessage(warning.GetJSON())
 	}
 }
@@ -208,37 +208,37 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 	usersToInvite := toArrayOfUsers(users)
 	if theyAllExist, user := verifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
-		warningMessage := message.WarningMessageUsername{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
+		warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
 		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
 	error:= inviteUsersToRoom(processor.username, roomName, usersToInvite)
 	if error != nil {
-		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, error.Error(), message.INVITE_TYPE, roomName}
+		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, error.Error(), message.INVITE_TYPE, roomName}
 		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
-	succesMessage := message.RoomInfoMessage{message.INFO_TYPE, "Succes: users have been invited to room", message.INVITE_TYPE, roomName}
+	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, "Succes: users have been invited to room", message.INVITE_TYPE, roomName}
 	processor.sendMessage(succesMessage.GetJSON())
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
 	err := joinRoom(processor.username, roomName)
 	if err != nil {
-		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, err.Error(), message.JOIN_ROOM_TYPE, roomName}
+		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, err.Error(), message.JOIN_ROOM_TYPE, roomName}
 		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
 	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
 		roomName)
-	succesMessage := message.RoomInfoMessage{message.INFO_TYPE, succesString, message.JOIN_ROOM_TYPE, roomName}
+	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, succesString, message.JOIN_ROOM_TYPE, roomName}
 	processor.sendMessage(succesMessage.GetJSON())
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {
 	memberList, err := getRoomUserList(processor.username, roomName)
 	if err != nil {
-		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, err.Error(), message.ROOM_USERS_TYPE, roomName}
+		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, err.Error(), message.ROOM_USERS_TYPE, roomName}
 		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
@@ -247,7 +247,7 @@ func roomUsersCase(processor *ServerProcessor, roomName string) {
 }
 
 //auxiliar function to convert this line to an array of users. 
-func toArrayOfUsers(line string) ([]string){
+func toArrayOfUsers(line string) ([]string) {
 	line = line[1:len(line) - 1]
 	lines := strings.Split(line, ",")
 	for i := 0; i < len(lines); i++ {
@@ -257,3 +257,27 @@ func toArrayOfUsers(line string) ([]string){
 	return lines
 }
 
+func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
+	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, succes, operation, roomName}
+	return succesMessage.GetJSON()
+}
+
+func getSuccesMessage(succes, operation string) ([]byte) {
+	succesMessage := message.SuccesMessage{message.INFO_TYPE, succes, operation}
+	return succesMessage.GetJSON()
+}
+
+func UsernameWarningMessage(warning string, operation string, userName string) ([]byte) {
+	warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warning, operation, userName}
+	return warningMessage.GetJSON()
+}
+
+func StatusWarningMessage(warning string, operation string, status string) ([]byte) {
+	warningMessage := message.StatusWarningMessage{message.WARNING_TYPE, warning, operation, status}
+	return warningMessage.GetJSON()
+}
+
+func RoomWarningMessage(warning string, operation string, roomName string) ([]byte) {
+	warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, warning, operation, roomName}
+	return warningMessage.GetJSON()
+}

@@ -76,14 +76,14 @@ func (mess RoomWarningMessage) GetJSON() []byte {
 	return message
 }
 
-type WarningMessageUsername struct {
+type UsernameWarningMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:"operation"`
 	Username string `json:"username"`
 }
 
-func (mess WarningMessageUsername) GetJSON() []byte {
+func (mess UsernameWarningMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
@@ -91,35 +91,19 @@ func (mess WarningMessageUsername) GetJSON() []byte {
 	return message
 }
 
-type WarningMessageStatus struct {
+type StatusWarningMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:"operation"`
 	Status string `json:"status"`
 }
 
-func (mess WarningMessageStatus) GetJSON() []byte {
+func (mess StatusWarningMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
 	}
 	return message
-}
-
-type WarningMessageRoom struct {
-	Type string `json:"type"`
-	Message string `json:"message"`
-	Operation string `json:"operation"`
-	Roomname string `json:"roomname"`
-}
-
-
-func (mess WarningMessageRoom) GetJSON() []byte {
-	message, err := json.Marshal(mess)
-       if err != nil {
-	       fmt.Println("This should not happen")
-       }
-       return message
 }
 
 type SuccesMessage struct {
@@ -136,14 +120,14 @@ func (mess SuccesMessage) GetJSON() []byte {
 	return message
 }
 
-type RoomInfoMessage struct {
+type RoomSuccesMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:"operation"`
 	Roomname string `json:"roomname"`
 }
 
-func (mess RoomInfoMessage) GetJSON() []byte {
+func (mess RoomSuccesMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
