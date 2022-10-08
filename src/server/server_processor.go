@@ -122,17 +122,16 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		privateMessageCase(processor, gottenMessage["username"], gottenMessage["message"])
 		break
 	case message.NEW_ROOM_MESSAGE_TYPE:
-		message, _ := createNewRoom(processor.username, processor, gottenMessage["roomname"])
-		processor.sendMessage(message)
+		newRoomCase(processor, gottenMessage["roomname"])
 		break
 	case message.INVITE_MESSAGE_TYPE:
-		processor.sendMessage(inviteUsersToRoom(gottenMessage["roomname"], gottenMessage["usernames"]))
+		inviteToRoomCase(processor, gottenMessage["roomname"], gottenMessage["usernames"])
 		break
 	case message.JOIN_ROOM_MESSAGE_TYPE:
-		processor.sendMessage(joinRoom(processor.username, gottenMessage["roomname"]))
+		joinRoomCase(processor, gottenMessage["roomname"])
 		break
 	case message.ROOM_USERS_MESSAGE_TYPE:
-		processor.sendMessage(getRoomUserList(processor.username, gottenMessage["roomname"]))
+		roomUsersCase(processor, gottenMessage["roomname"])
 		break
 	}
 }
@@ -199,3 +198,37 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 		processor.sendMessage(warning.GetJSON())
 	}
 }
+
+func newRoomCase(processor *ServerProcessor, roomName string) {
+	message, _ := createNewRoom(processor.username, processor, roomName)
+	processor.sendMessage(message)
+}
+
+func inviteToRoomCase(processor *ServerProcessor, roomName string, users string) {
+	usersToInvite := toArrayOfUsers(users)
+	if theyAllExist, user := verifyIdentifiedUsers(usersToInvite); !theyAllExist {
+		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
+		warning := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, warningStr, message.INVITE_MESSAGE_TYPE, user}
+		processor.sendMessage(warning.GetJSON())
+	}
+	processor.sendMessage(inviteUsersToRoom(processor.username, roomName, usersToInvite))
+}
+
+func joinRoomCase(processor *ServerProcessor, roomName string) {
+	processor.sendMessage(joinRoom(processor.username, roomName))
+}
+
+func roomUsersCase(processor *ServerProcessor, roomName string) {
+	processor.sendMessage(getRoomUserList(processor.username, roomName))
+}
+
+//auxiliar function to convert this line to map 
+func toArrayOfUsers(line string) ([]string){
+	line = line[0:len(line) - 1]
+	lines := strings.Split(line, ",")
+	for i := 0; i < len(lines); i++ {
+		lines[i] = lines[i][0:len(lines[i])]
+	}
+	return lines
+}
+

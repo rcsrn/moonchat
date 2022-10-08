@@ -14,6 +14,11 @@ type mapCounter struct {
 	users map[string]*ServerProcessor
 }
 
+func (room *room)verifyRoomMember(userName string) (bool) {
+	return false 
+}
+
+
 
 
 

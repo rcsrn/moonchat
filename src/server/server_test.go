@@ -5,26 +5,30 @@ import(
 	"testing"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
+	//"encoding/json"
+	//reflect"
 )
 
-//Test for checkidentify function
-func TestCheckIdentify(t *testing.T) {
-	var processor ServerProcessor = ServerProcessor{}
-	
-	gottenMessage := string(checkIdentify("Juan", &processor))
-	mess := message.SuccesMessage{message.INFO_MESSAGE_TYPE, "Succes: username has been saved", message.IDENTIFY_MESSAGE_TYPE}
-	rightMessage := string(mess.GetJSON())
-	
-	if value := strings.Compare(gottenMessage, rightMessage); value != 0 {
-		t.Errorf("message that was gotten is %v and must be %v", gottenMessage, rightMessage)
+func cleanUserMap() {
+	for k := range counter.users {
+		delete(counter.users, k)
 	}
+}
+
+func cleanRoomMap () {
+	for k, _ := range counter.rooms {
+		delete(counter.users, k)
+	}
+}
+
+func fillUserList() {
+	processor1 := ServerProcessor{}
+	processor2 := ServerProcessor{}
+	processor3 := ServerProcessor{}
 	
-	gottenMessage2 := string(checkIdentify("Juan", &processor))
-	mess2 := message.WarningMessageUsername{message.WARNING_MESSAGE_TYPE, "username already used", message.IDENTIFY_MESSAGE_TYPE, "Juan"}
-	rightMessage2 := string(mess2.GetJSON())
-	if value := strings.Compare(gottenMessage2, rightMessage2); value != 0 {
-		t.Errorf("message that was gotten is %v and must be %v", gottenMessage2, rightMessage2)
-	}	
+	counter.users["Juan"] = &processor1
+	counter.users["Brayan"] = &processor2
+	counter.users["Pedro"] = &processor3
 }
 
 //Test for adding a new user 
@@ -53,16 +57,57 @@ func TestGetUserProcessor(t *testing.T) {
 	}
 }
 
-func cleanUserMap() {
-	for k := range counter.users {
-		delete(counter.users, k)
+func TestGetRoom(t *testing.T) {
+	initRooms()
+	newRoom := room{}
+	counter.rooms["Sala1"] = &newRoom
+	gottenRoom, err := getRoom("Sala1")
+	if err != nil || gottenRoom != &newRoom {
+		t.Errorf("The gotten room is wrong")
 	}
 }
 
-func cleanRoomMap () {
-	for k, _ := range counter.rooms {
-		delete(counter.users, k)
+
+// func TestGetUserList(t *testing.T) {	
+// 	cleanUserMap()
+// 	fillUserList()
+// 	gottenUserList := getUserList()
+// 	var users []string
+
+// 	for username, _ := range counter.users{
+// 		users = append(users, username)
+// 	}
+
+// 	var lines map[string]string 
+// 	err1 := json.Unmarshal(gottenUserList, &lines)
+
+// 	if err1 != nil {
+// 		t.Errorf("This should not happen %v", err1.Error())
+// 	}
+	
+// 	userList := message.UserList{message.USER_LIST_MESSAGE_TYPE, users}
+// 	userListJson := userList.GetJSON()
+	
+// 	var rightLines map[string]string
+// 	err2 := json.Unmarshal(userListJson, &rightLines)
+	
+// 	if err2 != nil {
+// 		t.Errorf("This should not happen %v", err2.Error())
+// 	}
+
+// 	if theyAreEqual := reflect.DeepEqual(lines, rightLines); !theyAreEqual {
+// 		t.Errorf("The gotten list is %v and it must be %v", string(gottenUserList), string(userListJson))
+// 	}
+// }
+
+
+func compareAllStrings(lines []string, element string) (bool){
+	for i := 0 ; i < len(lines); i++ {
+		if value:= strings.Compare(lines[i], element); value == 0 {
+			return true
+		}
 	}
+	return false
 }
 
 func compareMessages(message1 []byte, message2 []byte) (int) {
@@ -70,8 +115,6 @@ func compareMessages(message1 []byte, message2 []byte) (int) {
 }
 
 func TestAddRoom(t *testing.T) {	
-	initRooms()
-	
 	newRoom1 := room{}
 	newRoom2 := room{}
 	newRoom3 := room {}
@@ -140,12 +183,24 @@ func TestCreateNewRoom(t *testing.T) {
 	}
 }
 
-func TestJoinRoom (t *testing.T) {
-	
+func TestJoinRoom(t *testing.T) {
 }
 
 func TestInviteUsersToRoom(t *testing.T) {
+	//newRoom := room{}
 	
+}
+
+func TestVerifyUserName(t *testing.T) {
+	cleanUserMap()
+	processor1 := ServerProcessor{}
+	counter.users["Pedro"] = &processor1
+	if available := verifyUserName("Pedro"); available {
+		t.Errorf("The username is not available.")
+	}
+	if available := verifyUserName("pedro"); !available {
+		t.Errorf("The username should be available.")
+	}
 }
 
 func TestVerifyRoomName(t *testing.T) {
@@ -156,7 +211,16 @@ func TestVerifyRoomName(t *testing.T) {
 }
 
 func TestVerifyStatus(t *testing.T) {
-	if indicator := verifyStatus("SAD"); indicator {
+	if isValid := verifyStatus("AWAY"); !isValid {
+		t.Errorf("This status should be valid.")
+	}
+	if isValid := verifyStatus("BUSY"); !isValid {
+		t.Errorf("This status should be valid.")
+	}
+	if isValid := verifyStatus("ACTIVE"); !isValid {
+		t.Errorf("This status should be valid.")
+	}
+	if isValid := verifyStatus("SAD"); isValid {
 		t.Error("FAIL")
 	}
 }

@@ -65,9 +65,9 @@ func addUser(username string, processor *ServerProcessor) {
 }
 
 func addRoom(roomname string, room *room) {
-	counter.blocker.Lock()
+	//counter.blocker.Lock()
 	counter.rooms[roomname] = room
-	counter.blocker.Unlock()
+	//counter.blocker.Unlock()
 }
 
 //sends a message just to users that have been added.
@@ -114,6 +114,11 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 	return nil, errors.New("User not found")
 }
 
+
+func getRoom(roomName string)(*room, error) {
+	return nil, nil
+}
+
 func verifyUserName(userName string) bool {
 	counter.blocker.RLock()
 	if _, ok := counter.users[userName]; ok {
@@ -144,6 +149,10 @@ func verifyRoomName(roomName string) (bool) {
 	return true;
 }
 
+func verifyIdentifiedUsers(users []string) (bool, string) {
+	return false , ""
+}
+
 
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
 	if value := strings.Compare(roomname, ""); value == 0 {
@@ -165,7 +174,22 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string)
 	return fail.GetJSON(), errors.New("Room name already used")
 }
 
-func inviteUsersToRoom(roomName string, users string) []byte {
+
+
+func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []byte {
+	room, err := getRoom(roomName)
+	
+	if err != nil {
+		warningString := fmt.Sprintf("The room '%s' does not exist.", roomName)
+		warning := message.WarningMessageRoom{message.WARNING_MESSAGE_TYPE, warningString, message.INVITE_MESSAGE_TYPE, roomName}
+		return warning.GetJSON()
+	}
+	
+	if isMember := room.verifyRoomMember(host); !isMember {
+		warningString := fmt.Sprintf("The user is not a member of the room '%s'", roomName)
+		warning := message.WarningMessageRoom{message.WARNING_MESSAGE_TYPE, warningString, message.ROOM_USERS_MESSAGE_TYPE, roomName}
+		return warning.GetJSON()
+	}
 	return nil
 }
 

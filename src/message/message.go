@@ -7,30 +7,29 @@ import (
 
 const (
 	PUBLIC_MESSAGE_FROM_TYPE = "PUBLIC_MESSAGE_FROM"
-	PUBLIC_MESSAGE_TYPE = "PUBLIC_MESSAGE"
-	ERROR_MESSAGE_TYPE = "ERROR"
-	WARNING_MESSAGE_TYPE = "WARNING"
-	INFO_MESSAGE_TYPE = "INFO"
-	IDENTIFY_MESSAGE_TYPE = "IDENTIFY"
-	NEW_USER_MESSAGE_TYPE = "NEW_USER"
-	DISCONNECTED_MESSAGE_TYPE = "DISCONNECTED"
-	DISCONNECT_MESSAGE_TYPE = "DISCONNECT"
-	STATUS_MESSAGE_TYPE = "STATUS"
-	NEW_STATUS_MESSAGE_TYPE = "NEW_STATUS"
-	USERS_MESSAGE_TYPE = "USERS"
-	USER_LIST_MESSAGE_TYPE = "USER_LIST"
+	PUBLIC_TYPE = "PUBLIC_MESSAGE"
+	ERROR_TYPE = "ERROR"
+	WARNING_TYPE = "WARNING"
+	INFO_TYPE = "INFO"
+	IDENTIFY_TYPE = "IDENTIFY"
+	NEW_USER_TYPE = "NEW_USER"
+	DISCONNECTED_TYPE = "DISCONNECTED"
+	DISCONNECT_TYPE = "DISCONNECT"
+	STATUS_TYPE = "STATUS"
+	NEW_STATUS_TYPE = "NEW_STATUS"
+	USERS_TYPE = "USERS"
+	USER_TYPE = "USER_LIST"
 	MESSAGE_TYPE = "MESSAGE"
-	PRIVATE_MESSAGE_TYPE = "MESSAGE_FROM"
-	NEW_ROOM_MESSAGE_TYPE = "NEW_ROOM"
-	INVITE_MESSAGE_TYPE =  "INVITE"
-	JOIN_ROOM_MESSAGE_TYPE = "JOIN_ROOM"
-	ROOM_USERS_MESSAGE_TYPE = "ROOM_USERS"
+	PRIVATE_TYPE = "MESSAGE_FROM"
+	NEW_ROOM_TYPE = "NEW_ROOM"
+	INVITE_TYPE =  "INVITE"
+	JOIN_ROOM_TYPE = "JOIN_ROOM"
+	ROOM_USERS_TYPE = "ROOM_USERS"
 )
 
 type Message interface {
 	GetJSON() []byte
 }
-
 
 type ErrorMessageStatus struct {
 	Type string `json:"type"`
@@ -104,6 +103,22 @@ func (mess WarningMessageStatus) GetJSON() []byte {
 		fmt.Println("This should not happen")
 	}
 	return message
+}
+
+type WarningMessageRoom struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:"operation"`
+	Roomname string `json:"roomname"`
+}
+
+
+func (mess WarningMessageRoom) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+       if err != nil {
+	       fmt.Println("This should not happen")
+       }
+       return message
 }
 
 type SuccesMessage struct {
