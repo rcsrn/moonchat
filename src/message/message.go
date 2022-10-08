@@ -25,6 +25,7 @@ const (
 	INVITE_TYPE =  "INVITE"
 	JOIN_ROOM_TYPE = "JOIN_ROOM"
 	ROOM_USERS_TYPE = "ROOM_USERS"
+	ROOM_USER_LIST_TYPE = "ROOM_USER_LIST"
 )
 
 type Message interface {

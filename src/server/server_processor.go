@@ -216,11 +216,23 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
-	processor.sendMessage(joinRoom(processor.username, roomName))
+	err := joinRoom(processor.username, roomName)
+	if err != nil {
+		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, err.Error(), message.JOIN_ROOM_TYPE, roomName}
+		processor.sendMessage(warningMessage.GetJSON())
+		return
+	}
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {
-	processor.sendMessage(getRoomUserList(processor.username, roomName))
+	memberList, err := getRoomUserList(processor.username, roomName)
+	if err != nil {
+		warningMessage := message.WarningMessageRoom{message.WARNING_TYPE, err.Error(), message.ROOM_USERS_TYPE, roomName}
+		processor.sendMessage(warningMessage.GetJSON())
+		return
+	}
+	roomUsersMessage := message.UserList{message.ROOM_USERS_TYPE, memberList}
+	processor.sendMessage(roomUsersMessage.GetJSON())
 }
 
 //auxiliar function to convert this line to an array of users. 

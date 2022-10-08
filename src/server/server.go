@@ -28,7 +28,6 @@ const (
 )
 
 func (server *Server) WaitForConnections() {
-	initRooms()
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
@@ -54,11 +53,11 @@ func initRooms() {
 	counter.rooms = make(map[string]*room)
 }
 
-func addUser(username string, processor *ServerProcessor) {
+func addUser(userName string, processor *ServerProcessor) {
 	counter.blocker.Lock()
-	counter.users[username] = processor
+	counter.users[userName] = processor
 	counter.blocker.Unlock()
-	m := message.NewUserMessage{message.NEW_USER_TYPE, username}
+	m := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 	toAllUsers(processor, m.GetJSON())
 }
 
@@ -197,19 +196,23 @@ func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []b
 	return nil
 }
 
-func joinRoom(username string, roomName string) []byte {
+func joinRoom(userName string, roomName string) (error) {
 	return nil
 }
 
-func getRoomUserList(username string, roomName string) []byte {
+func getRoomUserList(userName string, roomName string) ([]string, error) {
 	room, err := getRoom(roomName)
 	if err != nil {
-		
+		errorString := fmt.Sprintf("The room '%s' does not exist.",
+			roomName)
+		return nil, errors.New(errorString)
 	}
-	if isMember := room.verifyRoomMember(username); !isMember {
-		
+	if isMember := room.verifyRoomMember(userName); !isMember {
+		errorString := fmt.Sprintf("The user '%s' is not a member of the room '%s'",
+			userName,
+			roomName)
+		return nil , errors.New(errorString)
 	}
-	return room.getMemberList()
+	return room.getMemberList(), nil
 }
 
- 

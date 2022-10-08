@@ -18,7 +18,7 @@ func (room *room) verifyRoomMember(userName string) (bool) {
 	return false 
 }
 
-func (room *room) getMemberList() ([]byte) {
+func (room *room) getMemberList() ([]string) {
 	return nil
 }
 
