@@ -22,3 +22,11 @@ func (room *room) getMemberList() ([]string) {
 	return nil
 }
 
+func (room *room) itHasBeenInvited(userName string) (bool) {
+	return true
+}
+
+func (room *room) addUser(userName string) {
+	
+}
+

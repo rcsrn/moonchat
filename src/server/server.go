@@ -115,7 +115,9 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 func getRoom(roomName string) (*room, error) {
 	room, itExists := counter.rooms[roomName]
 	if !itExists {
-		return nil, errors.New("The room does not exist.")
+		errorString := fmt.Sprintf("The room '%s' does not exist.",
+			roomName)
+		return nil, errors.New(errorString)
 	}
 	return room, nil
 }
@@ -189,7 +191,7 @@ func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []b
 	}
 	
 	if isMember := room.verifyRoomMember(host); !isMember {
-		warningString := fmt.Sprintf("The user is not a member of the room '%s'", roomName)
+		warningString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
 		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.ROOM_USERS_TYPE, roomName}
 		return warning.GetJSON()
 	}
@@ -197,6 +199,16 @@ func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []b
 }
 
 func joinRoom(userName string, roomName string) (error) {
+	room, error := getRoom(roomName)
+	if error != nil {
+		return error
+	}
+	if userHasBeenInvited := room.itHasBeenInvited(userName); !userHasBeenInvited {
+		errorMessage := fmt.Sprintf("The user has not been invited to '%s'.",
+		roomName)
+		return createError(errorMessage)
+	}
+	room.addUser(userName)
 	return nil
 }
 
@@ -214,5 +226,9 @@ func getRoomUserList(userName string, roomName string) ([]string, error) {
 		return nil , errors.New(errorString)
 	}
 	return room.getMemberList(), nil
+}
+
+func createError(errorMessage string) (error) {
+	return errors.New(errorMessage)
 }
 

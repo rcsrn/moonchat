@@ -222,6 +222,10 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 		processor.sendMessage(warningMessage.GetJSON())
 		return
 	}
+	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
+		roomName)
+	succesMessage := message.RoomInfoMessage{message.INFO_TYPE, succesString, message.JOIN_ROOM_TYPE, roomName}
+	processor.sendMessage(succesMessage.GetJSON())
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {

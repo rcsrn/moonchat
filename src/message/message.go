@@ -136,6 +136,21 @@ func (mess SuccesMessage) GetJSON() []byte {
 	return message
 }
 
+type RoomInfoMessage struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Operation string `json:"operation"`
+	Roomname string `json:"roomname"`
+}
+
+func (mess RoomInfoMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
 type IdentifyMessage struct {
 	Type string `json:"type"`
 	Username string `json"username"`
