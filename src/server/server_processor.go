@@ -236,14 +236,14 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {
-	memberList, err := getRoomUserList(processor.username, roomName)
+	roomUserList, err := getRoomUserList(processor.username, roomName)
 	if err != nil {
-		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, err.Error(), message.ROOM_USERS_TYPE, roomName}
-		processor.sendMessage(warningMessage.GetJSON())
+		warningMessage := getRoomWarningMessage(err.Error(), message.ROOM_USERS_TYPE, roomName)
+		processor.sendMessage(warningMessage)
 		return
 	}
-	roomUsersMessage := message.UserList{message.ROOM_USERS_TYPE, memberList}
-	processor.sendMessage(roomUsersMessage.GetJSON())
+	roomUsersMessage := getUserListMessage(message.ROOM_USER_LIST_TYPE, roomUserList)
+	processor.sendMessage(roomUsersMessage)
 }
 
 //auxiliar function to convert this line to an array of users. 
@@ -287,3 +287,13 @@ func getDisconnectedMessage(userName string) ([]byte) {
 	return disconnectedMessage.GetJSON()
 }
 
+func getUserListMessage(typeOfList string, userList []string) ([]byte) {
+	switch typeOfList {
+	case message.ROOM_USER_LIST_TYPE:
+		userListMessage := message.UserList{message.ROOM_USER_LIST_TYPE, userList}
+		return userListMessage.GetJSON()
+	default:
+		userListMessage := message.UserList{message.USER_LIST_TYPE, userList}
+		return userListMessage.GetJSON()
+	}
+}
