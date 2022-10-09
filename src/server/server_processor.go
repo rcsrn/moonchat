@@ -36,8 +36,8 @@ func (processor *ServerProcessor) readMessages() {
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			processor.disconnectClient()
 			if processor.identified {
-				disconn := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
-				toAllUsers(processor, disconn.GetJSON())
+				disconnectedMessage := getDisconnectedMessage(processor.username)
+				toAllUsers(processor, disconnectedMessage)
 			}
 			log.Printf("Error while unmarshaling: %v\n", err2.Error())
 			if processor.identified == true {
@@ -138,24 +138,24 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 
 func statusCase(processor *ServerProcessor, newStatus string) {
 	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
-		str := fmt.Sprintf("The current status is '%s'. Please select other.", processor.userStatus)
-		warning := message.StatusWarningMessage{message.WARNING_TYPE, str, message.STATUS_TYPE, processor.userStatus}
-		processor.sendMessage(warning.GetJSON())
+		warningString := fmt.Sprintf("The current status is '%s'. Please select other.", processor.userStatus)
+		warningMessage := getStatusWarningMessage(warningString, message.STATUS_TYPE, processor.userStatus)
+		processor.sendMessage(warningMessage)
 		return
 	}
 	
 	changedStatus := processor.changeStatus(newStatus)
 	if changedStatus {
-		succes := message.SuccesMessage{message.INFO_TYPE, "Succes: status changed succesfully", message.STATUS_TYPE}
-		processor.sendMessage(succes.GetJSON())
-		messageToUsers := message.NewStatusMessage{message.NEW_STATUS_TYPE, processor.username, newStatus}
-		toAllUsers(processor, messageToUsers.GetJSON())
+		succesMessage := getSuccesMessage("Succes: status changed succesfully", message.STATUS_TYPE)
+		processor.sendMessage(succesMessage)
+		messageToUsers := getNewStatusMessage(processor.username, newStatus)
+		toAllUsers(processor, messageToUsers)
 	} else {
-		error := message.ErrorMessageStatus{message.ERROR_TYPE, "Invalid status!", message.STATUS_TYPE}
-		processor.sendMessage(error.GetJSON())
+		errorMessage := getStatusErrorMessage("Invalid status!", message.STATUS_TYPE)
+		processor.sendMessage(errorMessage)
 		processor.disconnectClient()
-		messageToUsers := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
-		toAllUsers(processor, messageToUsers.GetJSON())
+		messageToUsers := getDisconnectedMessage(processor.username)
+		toAllUsers(processor, messageToUsers)
 	}
 }
 
@@ -165,38 +165,41 @@ func identifyCase(processor *ServerProcessor, userName string) {
 	if TheUserNameIsAvailable {
 		addUser(userName, processor)
 		processor.setUserName(userName)
-		succes := message.SuccesMessage{message.INFO_TYPE, "Succes: username has been saved", message.IDENTIFY_TYPE}
-		processor.sendMessage(succes.GetJSON())
+		succesMessage := getSuccesMessage("Succes: username has been saved", message.IDENTIFY_TYPE)
+		processor.sendMessage(succesMessage)
 	} else {
-		str := fmt.Sprintf("username '%s' already used.", userName)
-		warning := message.UsernameWarningMessage{message.WARNING_TYPE, str , message.IDENTIFY_TYPE, userName}
-		processor.sendMessage(warning.GetJSON())
+		warningString := fmt.Sprintf("username '%s' is already used.", userName)
+		warningMessage := getUsernameWarningMessage(warningString, message.IDENTIFY_TYPE, userName)
+		processor.sendMessage(warningMessage)
 	}
 }
 
 func userListCase(processor *ServerProcessor) {
-	list := getUserList()
-	processor.sendMessage(list)
+	userList := getUserList()
+	userListMessage := getUserListMessage(message.USER_LIST_TYPE, userList)
+	processor.sendMessage(userListMessage)
 }
 
 func disconnectClientCase(processor *ServerProcessor) {
 	processor.disconnectClient()
-	disconn := message.DisconnectedMessage{message.DISCONNECTED_TYPE, processor.username}
-	toAllUsers(processor, disconn.GetJSON())
+	disconnectedMessage := getDisconnectedMessage(processor.username)
+	toAllUsers(processor, disconnectedMessage)
 }
 
-func publicMessageCase(processor *ServerProcessor, public string) {
-	publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, processor.username, public}
-	toAllUsers(processor, publicMessage.GetJSON())	
+func publicMessageCase(processor *ServerProcessor, publicMessageToSend string) {
+	publicMessage := getPublicMessage(processor.username, publicMessageToSend)
+	toAllUsers(processor, publicMessage)	
 }
 
-func privateMessageCase(processor *ServerProcessor, receptor string, privateMessage string) {
-	err := sendPrivateMessage(receptor, privateMessage, processor.username)
-	if err != nil {
-		str := fmt.Sprintf("the user '%v' does not exist", receptor)
-		warning := message.UsernameWarningMessage{message.WARNING_TYPE, str, message.MESSAGE_TYPE, receptor}
-		processor.sendMessage(warning.GetJSON())
+func privateMessageCase(processor *ServerProcessor, receptor string, privateMessageToSend string) {
+	receptorProcessor, error := getUserProcessor(receptor)
+	if error != nil {
+		warningMessage := getUsernameWarningMessage(error.Error(), message.MESSAGE_TYPE, receptor)
+		processor.sendMessage(warningMessage)
+		return
 	}
+	privateMessage := getPrivateMessage(privateMessageToSend, processor.username)
+	receptorProcessor.sendMessage(privateMessage)
 }
 
 func newRoomCase(processor *ServerProcessor, roomName string) {
@@ -207,32 +210,31 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 func inviteToRoomCase(processor *ServerProcessor, roomName string, users string) {
 	usersToInvite := toArrayOfUsers(users)
 	if theyAllExist, user := verifyIdentifiedUsers(usersToInvite); !theyAllExist {
-		warningStr := fmt.Sprintf("The user '%s' does not exist", user)
-		warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warningStr, message.INVITE_TYPE, user}
-		processor.sendMessage(warningMessage.GetJSON())
+		warningString := fmt.Sprintf("The user '%s' does not exist", user)
+		warningMessage := getUsernameWarningMessage(warningString, message.INVITE_TYPE, user)
+		processor.sendMessage(warningMessage)
 		return
 	}
 	error:= inviteUsersToRoom(processor.username, roomName, usersToInvite)
 	if error != nil {
-		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, error.Error(), message.INVITE_TYPE, roomName}
-		processor.sendMessage(warningMessage.GetJSON())
+		warningMessage := getRoomWarningMessage(error.Error(), message.INVITE_TYPE, roomName)
+		processor.sendMessage(warningMessage)
 		return
 	}
-	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, "Succes: users have been invited to room", message.INVITE_TYPE, roomName}
-	processor.sendMessage(succesMessage.GetJSON())
+	succesMessage := getRoomSuccesMessage("Succes: users have been invited to room", message.INVITE_TYPE, roomName)
+	processor.sendMessage(succesMessage)
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
 	err := joinRoom(processor.username, roomName)
 	if err != nil {
-		warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, err.Error(), message.JOIN_ROOM_TYPE, roomName}
-		processor.sendMessage(warningMessage.GetJSON())
+		processor.sendMessage(getRoomWarningMessage(err.Error(), message.JOIN_ROOM_TYPE, roomName))
 		return
 	}
 	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
 		roomName)
-	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, succesString, message.JOIN_ROOM_TYPE, roomName}
-	processor.sendMessage(succesMessage.GetJSON())
+	succesMessage := getRoomSuccesMessage(succesString, message.JOIN_ROOM_TYPE, roomName)
+	processor.sendMessage(succesMessage)
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {
@@ -262,7 +264,7 @@ func getRoomSuccesMessage(succes string, operation string, roomName string) ([]b
 	return succesMessage.GetJSON()
 }
 
-func getSuccesMessage(succes, operation string) ([]byte) {
+func getSuccesMessage(succes string, operation string) ([]byte) {
 	succesMessage := message.SuccesMessage{message.INFO_TYPE, succes, operation}
 	return succesMessage.GetJSON()
 }
@@ -296,4 +298,24 @@ func getUserListMessage(typeOfList string, userList []string) ([]byte) {
 		userListMessage := message.UserList{message.USER_LIST_TYPE, userList}
 		return userListMessage.GetJSON()
 	}
+}
+
+func getPrivateMessage(private string, transmitter string) ([]byte) {
+	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, private}
+	return privateMessage.GetJSON()
+}
+
+func getPublicMessage(userName string, public string) ([]byte) {
+	publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, userName, public}
+	return publicMessage.GetJSON()
+}
+
+func getNewStatusMessage(userName string, status string) ([]byte) {
+	newStatusMessage := message.NewStatusMessage{message.NEW_STATUS_TYPE, userName, status}
+	return newStatusMessage.GetJSON()
+}
+
+func getStatusErrorMessage(error string, operation string) ([]byte) {
+	errorMessage := message.StatusErrorMessage{message.ERROR_TYPE, error, operation}
+	return errorMessage.GetJSON()
 }

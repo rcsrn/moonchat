@@ -32,13 +32,13 @@ type Message interface {
 	GetJSON() []byte
 }
 
-type ErrorMessageStatus struct {
+type StatusErrorMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:operation"`
 }
 
-func (mess ErrorMessageStatus) GetJSON() []byte {
+func (mess StatusErrorMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")

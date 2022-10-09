@@ -80,26 +80,25 @@ func toAllUsers(processor *ServerProcessor, message []byte) {
 }
 
 //Returns the identified user list
-func getUserList() []byte {
+func getUserList() []string {
 	counter.blocker.RLock()
 	var listOfUsers []string
 	for username, _ := range counter.users{
 		listOfUsers = append(listOfUsers, username)
 	}
 	counter.blocker.RUnlock()
-	mess := message.UserList{message.USER_LIST_TYPE, listOfUsers}
-	return mess.GetJSON()
+	return listOfUsers
 }
 
-func sendPrivateMessage(receptor string, messageToSend string, transmitter string) (error){
-	userProcess, err := getUserProcessor(receptor)
-	if err != nil {
-		return err
-	}
-	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, messageToSend}
-	userProcess.sendMessage(privateMessage.GetJSON())
-	return nil
-}
+// func sendPrivateMessage(receptor string, messageToSend string, transmitter string) (error){
+// 	userProcess, err := getUserProcessor(receptor)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, messageToSend}
+// 	userProcess.sendMessage(privateMessage.GetJSON())
+// 	return nil
+// }
 
 //gets the user received
 func getUserProcessor(userName string)(*ServerProcessor, error){
@@ -108,7 +107,9 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 		return userProcessor, nil
 	}
 	counter.blocker.RUnlock()
-	return nil, errors.New("User not found")
+	errorMessage := fmt.Sprintf("The user '%s' does not exist.",
+		userName)
+	return nil, createError(errorMessage)
 }
 
 
