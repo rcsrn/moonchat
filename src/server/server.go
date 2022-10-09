@@ -162,6 +162,12 @@ func verifyIdentifiedUsers(users []string) (bool, string) {
 	return true, ""
 }
 
+func removeOldName(oldName string) {
+	counter.blocker.Lock()
+	delete(counter.users, oldName)
+	counter.blocker.Unlock()
+}
+
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
 	if value := strings.Compare(roomname, ""); value == 0 {
 		return nil, errors.New("Invalid room name")
@@ -181,6 +187,8 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string)
 	fail := message.RoomWarningMessage{message.WARNING_TYPE, str, message.NEW_ROOM_TYPE, roomname}
 	return fail.GetJSON(), errors.New("Room name already used")
 }
+
+
 
 func inviteUsersToRoom(host string, roomName string, usersToInvite []string) (error) {
 	room, err := getRoom(roomName)

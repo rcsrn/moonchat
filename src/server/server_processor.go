@@ -98,7 +98,6 @@ func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	return true
 }
 
-
 //processes received messages proceeding in each case as necessary.
 func (processor *ServerProcessor) processMessage(gottenMessage map[string]string) {
 	var typeMessage string = gottenMessage["type"]
@@ -163,6 +162,9 @@ func identifyCase(processor *ServerProcessor, userName string) {
 	TheUserNameIsAvailable := verifyUserName(userName)
 
 	if TheUserNameIsAvailable {
+		if itHasOldName := strings.Compare(processor.username, ""); itHasOldName != 0 {
+			removeOldName(processor.username)
+		}
 		addUser(userName, processor)
 		processor.setUserName(userName)
 		succesMessage := getSuccesMessage("Succes: username has been saved", message.IDENTIFY_TYPE)
