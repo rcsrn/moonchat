@@ -267,17 +267,23 @@ func getSuccesMessage(succes, operation string) ([]byte) {
 	return succesMessage.GetJSON()
 }
 
-func UsernameWarningMessage(warning string, operation string, userName string) ([]byte) {
+func getUsernameWarningMessage(warning string, operation string, userName string) ([]byte) {
 	warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warning, operation, userName}
 	return warningMessage.GetJSON()
 }
 
-func StatusWarningMessage(warning string, operation string, status string) ([]byte) {
+func getStatusWarningMessage(warning string, operation string, status string) ([]byte) {
 	warningMessage := message.StatusWarningMessage{message.WARNING_TYPE, warning, operation, status}
 	return warningMessage.GetJSON()
 }
 
-func RoomWarningMessage(warning string, operation string, roomName string) ([]byte) {
+func getRoomWarningMessage(warning string, operation string, roomName string) ([]byte) {
 	warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, warning, operation, roomName}
 	return warningMessage.GetJSON()
 }
+
+func getDisconnectedMessage(userName string) ([]byte) {
+	disconnectedMessage := message.DisconnectedMessage{message.DISCONNECTED_TYPE, userName}
+	return disconnectedMessage.GetJSON()
+}
+
