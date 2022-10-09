@@ -205,8 +205,16 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 }
 
 func newRoomCase(processor *ServerProcessor, roomName string) {
-	message, _ := createNewRoom(processor.username, processor, roomName)
-	processor.sendMessage(message)
+	error := createNewRoom(processor.username, processor, roomName)
+	if error != nil {
+		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
+		processor.sendMessage(warningMessage)
+	} else {
+		succesString := fmt.Sprintf("Succes: The room '%s' has been created!",
+		roomName)
+		succesMessage := getRoomSuccesMessage(succesString, message.NEW_ROOM_TYPE, roomName)
+		processor.sendMessage(succesMessage)
+	}
 }
 
 func inviteToRoomCase(processor *ServerProcessor, roomName string, users string) {

@@ -14,6 +14,16 @@ type mapCounter struct {
 	users map[string]*ServerProcessor
 }
 
+func getRoomInstance(roomName string) *room {
+	roomUsers := mapCounter{}
+	var roomInstance room = room{roomUsers, roomName}
+	return &roomInstance
+}
+
+func (room *room) init() {
+	room.roomUsers.users = make (map[string]*ServerProcessor)
+}
+
 func (room *room) verifyRoomMember(userName string) (bool) {
 	return false 
 }

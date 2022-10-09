@@ -28,6 +28,7 @@ const (
 )
 
 func (server *Server) WaitForConnections() {
+	initRooms()
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
@@ -145,7 +146,6 @@ func verifyStatus(status string) (bool) {
 //verifies if the room name is available or not.
 func verifyRoomName(roomName string) (bool) {
 	counter.blocker.RLock()
-	counter.blocker.RUnlock()
 	if _, ok := counter.rooms[roomName]; ok {
 		return false;
 	}
@@ -168,25 +168,40 @@ func removeOldName(oldName string) {
 	counter.blocker.Unlock()
 }
 
-func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
-	if value := strings.Compare(roomname, ""); value == 0 {
-		return nil, errors.New("Invalid room name")
+func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
+	if value := strings.Compare(roomName, ""); value == 0 {
+		return createError("Invalid roomName!")
 	}
-	if ok := verifyRoomName(roomname); ok {
-		var users map[string]*ServerProcessor = make(map[string]*ServerProcessor)
-		users["host"] = hostProcessor
-		var blocker sync.RWMutex = sync.RWMutex{}
-		var roomUsers mapCounter = mapCounter{blocker,users}
-		var newRoom room = room{roomUsers, roomname}
-		addRoom(roomname, &newRoom)
-		str := fmt.Sprintf("Succes: The room '%s'has been created succesfully.", roomname)
-		succes := message.SuccesMessage{message.INFO_TYPE, str, message.NEW_ROOM_TYPE}
-		return succes.GetJSON(), nil
+	if isRoomNameValid := verifyRoomName(roomName); isRoomNameValid {
+		newRoom := getRoomInstance(roomName)
+		newRoom.init()
+		addRoom(roomName, newRoom)
+		return nil
 	}
-	str := fmt.Sprintf("The '%s' already exists.", roomname)
-	fail := message.RoomWarningMessage{message.WARNING_TYPE, str, message.NEW_ROOM_TYPE, roomname}
-	return fail.GetJSON(), errors.New("Room name already used")
+	errorString := fmt.Sprintf("Roomname '%s' is already used.",
+		roomName)
+	return createError(errorString)
 }
+
+// func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
+// 	if value := strings.Compare(roomname, ""); value == 0 {
+// 		return nil, errors.New("Invalid room name")
+// 	}
+// 	if ok := verifyRoomName(roomname); ok {
+// 		var users map[string]*ServerProcessor = make(map[string]*ServerProcessor)
+// 		users["host"] = hostProcessor
+// 		var blocker sync.RWMutex = sync.RWMutex{}
+// 		var roomUsers mapCounter = mapCounter{blocker,users}
+// 		var newRoom room = room{roomUsers, roomname}
+// 		addRoom(roomname, &newRoom)
+// 		str := fmt.Sprintf("Succes: The room '%s'has been created succesfully.", roomname)
+// 		succes := message.SuccesMessage{message.INFO_TYPE, str, message.NEW_ROOM_TYPE}
+// 		return succes.GetJSON(), nil
+// 	}
+// 	str := fmt.Sprintf("The '%s' already exists.", roomname)
+// 	fail := message.RoomWarningMessage{message.WARNING_TYPE, str, message.NEW_ROOM_TYPE, roomname}
+// 	return fail.GetJSON(), errors.New("Room name already used")
+// }
 
 
 
