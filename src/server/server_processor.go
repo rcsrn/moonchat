@@ -90,6 +90,15 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 	return message, nil
 }
 
+func (processor *ServerProcessor) unmarshalArrayJSON(j []byte) (message.InviteToRoomMessage, error) {
+	var message message.InviteToRoomMessage
+	err := json.Unmarshal(j, &message)
+	if err != nil {
+		return message, err
+	}
+	return message, nil
+}
+
 func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	if accepted := verifyStatus(newStatus); !accepted {
 		return false

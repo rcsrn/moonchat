@@ -215,4 +215,18 @@ func (mess NewMessage) GetJSON() []byte {
 	return message
 }
 
+//Client Messages:
 
+type InviteToRoomMessage struct {
+	Type string `json:type`
+	Roomname string `json:roomname`
+	Usernames []string `json:usernames`
+}
+
+func (mess InviteToRoomMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
