@@ -9,7 +9,7 @@ import(
 	"strings"	
 )
 
-type Server struct {
+type server struct {
 }
 
 //Maps protected for concurrency
@@ -19,16 +19,13 @@ var counter = struct{
 	users map[string]*ServerProcessor
 }{users: make(map[string]*ServerProcessor)}
 
-
-
 const (
 	SERVER_HOST = "localhost"
 	SERVER_PORT = "1234"
 	SERVER_TYPE = "tcp"
 )
 
-func (server *Server) WaitForConnections() {
-	initRooms()
+func (server *server) WaitForConnections() {
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
@@ -50,7 +47,7 @@ func (server *Server) WaitForConnections() {
 	}
 }
 
-func initRooms() {
+func (server *server) initRooms() {
 	counter.rooms = make(map[string]*room)
 }
 
@@ -246,7 +243,7 @@ func joinRoom(userName string, roomName string) (error) {
 		roomName)
 		return createError(errorMessage)
 	}
-	room.addUser(userName)
+	room.addRoomUser(userName)
 	return nil
 }
 

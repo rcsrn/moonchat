@@ -1,13 +1,17 @@
 package main
 
 import(
-	"fmt"
+	//"fmt"
 	"testing"
-	"github.com/rcsrn/moonchat/src/message"
+	//"github.com/rcsrn/moonchat/src/message"
 	"strings"
 	//"encoding/json"
 	//reflect"
 )
+
+func initRooms() {
+	counter.rooms = make(map[string]*room)
+}
 
 func cleanUserMap() {
 	for k := range counter.users {
@@ -29,6 +33,12 @@ func fillUserList() {
 	counter.users["Juan"] = &processor1
 	counter.users["Brayan"] = &processor2
 	counter.users["Pedro"] = &processor3
+}
+
+func fillUserArray(users []string) {
+	users[0] = "Kimberly"
+	users[1] = "Pepe"
+	users[2] = "Jack"
 }
 
 //Test for adding a new user 
@@ -85,56 +95,7 @@ func TestAddRoom(t *testing.T) {
 }
 
 func TestCreateNewRoom(t *testing.T) {
-	_ , err1:= createNewRoom("Juan", counter.users["Juan"], "")
 
-	if err1 == nil {
-		t.Errorf("FAIL: Invalid room name.")
-	}
-
-	str1:= fmt.Sprintf("Succes: The room '%s'has been created succesfully.", "SALA100")
-	succes := message.SuccesMessage{message.INFO_TYPE, str1, message.NEW_ROOM_TYPE}
-	succesMessage := succes.GetJSON()
-	
-	gottenMessage1, err2 := createNewRoom("Juan", counter.users["Juan"], "SALA100")
-	if err2 != nil {
-		t.Errorf("FAIL: The room has not been created succesfully.")
-	}
-	
-	if value := strings.Compare(string(succesMessage), string(gottenMessage1)); value != 0 {
-		t.Errorf("FAIL: gotten name %v and it must be %v", string(gottenMessage1), string(succesMessage))
-	}
-
-	if length := len(counter.rooms); length == 0 {
-		t.Errorf("FAIL")
-	}
-	
-	found := false
-	
-	for nameRoom, _ := range counter.rooms {
-		if value := strings.Compare(nameRoom, "SALA100"); value == 0 {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("FAIL: the room was not added succesfully to rooms.")
-	}
-
-	str2 := fmt.Sprintf("The '%s' already exists.", "SALA100")
-
-	fail := message.RoomWarningMessage{message.WARNING_TYPE, str2, message.NEW_ROOM_TYPE, "SALA100"}
-
-	failMessage := fail.GetJSON()
-	
-	gottenMessage2, err3 := createNewRoom("Juan", counter.users["Juan"], "SALA100")
-
-	if err3 == nil {
-		t.Errorf("FAIL: this should not happen.")
-	}
-
-	if value := strings.Compare(string(failMessage), string(gottenMessage2)); value != 0 {
-		t.Errorf("FAIL: gotten name %v and it must be %v", string(gottenMessage2), string(failMessage))
-	}
 }
 
 func TestJoinRoom(t *testing.T) {
@@ -208,9 +169,4 @@ func TestVerifyIdentifiedUsers(t *testing.T) {
 	}
 }
 
-func fillUserArray(users []string) {
-	users[0] = "Kimberly"
-	users[1] = "Pepe"
-	users[2] = "Jack"
-}
- 
+

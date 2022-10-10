@@ -1,11 +1,12 @@
 package main
 
 type chatAplication struct {
-	
+	server server
 }
 
 
 func (chat *chatAplication)start() {
-	server := Server{}
-	server.WaitForConnections()
+	chat.server = server{}
+	chat.server.initRooms()
+	chat.server.WaitForConnections()
 }
