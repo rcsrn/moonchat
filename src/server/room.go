@@ -2,7 +2,8 @@ package main
 
 import (
 	"sync"
-	//	"strings"
+	"fmt"
+	//"strings"
 )
 
 type room struct {
@@ -13,6 +14,7 @@ type room struct {
 type mapCounter struct {
 	blocker sync.RWMutex
 	users map[string]*ServerProcessor
+	invitedUsers map[string]*ServerProcessor
 }
 
 func getRoomInstance(roomName string) *room {
@@ -22,22 +24,11 @@ func getRoomInstance(roomName string) *room {
 }
 
 func (room *room) init() {
-	room.counter.users = make (map[string]*ServerProcessor)
+	room.counter.users = make(map[string]*ServerProcessor)
+	room.counter.invitedUsers = make(map[string]*ServerProcessor)
 }
 
 func (room *room) verifyRoomMember(userName string) (bool) {
-	return false 
-}
-
-func (room *room) getMemberList() ([]string) {
-	return nil
-}
-
-func (room *room) verifyInvitedUser(userName string) (bool) {
-	return true
-}
-
-func (room *room) verifyUserExistence(userName string) (bool) {
 	room.counter.blocker.RLock()
 	if _, itExists := room.counter.users[userName]; itExists {
 		return true
@@ -46,9 +37,22 @@ func (room *room) verifyUserExistence(userName string) (bool) {
 	return false
 }
 
+func (room *room) getMemberList() ([]string) {
+	return nil
+}
+
+func (room *room) verifyInvitedUser(userName string) (bool) {
+	if _, userHasBeenInvited := room.counter.invitedUsers[userName]; userHasBeenInvited {
+		return true
+	}
+	return false
+}
+
 func (room *room) addRoomUser(userName string) {
 	userProcessor, _ := getUserProcessor(userName)
 	room.counter.blocker.Lock()
+	fmt.Println("INICIO DESBLOQUEO")
 	room.counter.users[userName] = userProcessor
 	room.counter.blocker.Unlock()
+	fmt.Println("TERMINO DESBLOQUEO")
 }
