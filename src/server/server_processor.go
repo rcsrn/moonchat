@@ -82,22 +82,32 @@ func (processor *ServerProcessor) sendMessage(message []byte) {
 
 //unmarshals messages that need to be processed by serverProcessor
 func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, error) {
-	var message map[string]string 
-	err := json.Unmarshal(j, &message)
-	if err != nil {
-		return message, err
+	var mapString map[string]string 
+	error1 := json.Unmarshal(j, &mapString)
+	if error1 != nil {
+		if val := strings.Compare(error1.Error(), "json: cannot unmarshal array into Go value of type string"); val == 0 {
+			var message message.InviteToRoomMessage
+			error2 := json.Unmarshal(j, &message)
+			if error2 != nil {
+				return nil, error2
+			}
+			return convertMessageToMapString(message), nil
+		} else {
+			return nil, error1
+		}
 	}
-	return message, nil
+	return mapString, nil
 }
 
-func (processor *ServerProcessor) unmarshalArrayJSON(j []byte) (message.InviteToRoomMessage, error) {
-	var message message.InviteToRoomMessage
-	err := json.Unmarshal(j, &message)
-	if err != nil {
-		return message, err
-	}
-	return message, nil
+//auxiliar function to deal the case when it is necessary to work with an array of strings.
+func convertMessageToMapString(message message.InviteToRoomMessage) (map[string]string) {
+	mapString := make(map[string]string)
+	mapString["type"] = message.Type
+	mapString["roomname"] = message.Roomname
+	mapString["usernames"] = strings.Join(message.Usernames, ",")
+	return mapString
 }
+
 
 func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	if accepted := verifyStatus(newStatus); !accepted {

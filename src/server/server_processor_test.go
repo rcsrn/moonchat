@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
+	"fmt"
 )
 
 var testProcessor ServerProcessor;
@@ -41,5 +42,10 @@ func TestUnmarshalJSON(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestToArrayOfUsers(t *testing.T) {
+	stringSlice := make([]string, 3)
+	fillUserArray(stringSlice)	
 }
 
