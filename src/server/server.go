@@ -162,6 +162,7 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string)
 	if isRoomNameValid := verifyRoomName(roomName); isRoomNameValid {
 		newRoom := getRoomInstance(roomName)
 		newRoom.init()
+		newRoom.addRoomUser(host)
 		addRoom(roomName, newRoom)
 		return nil
 	}
