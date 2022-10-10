@@ -88,16 +88,6 @@ func getUserList() []string {
 	return listOfUsers
 }
 
-// func sendPrivateMessage(receptor string, messageToSend string, transmitter string) (error){
-// 	userProcess, err := getUserProcessor(receptor)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, messageToSend}
-// 	userProcess.sendMessage(privateMessage.GetJSON())
-// 	return nil
-// }
-
 //gets the user received
 func getUserProcessor(userName string)(*ServerProcessor, error){
 	counter.blocker.RLock()
@@ -180,28 +170,6 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string)
 	return createError(errorString)
 }
 
-// func createNewRoom(host string, hostProcessor *ServerProcessor, roomname string) ([]byte, error) {
-// 	if value := strings.Compare(roomname, ""); value == 0 {
-// 		return nil, errors.New("Invalid room name")
-// 	}
-// 	if ok := verifyRoomName(roomname); ok {
-// 		var users map[string]*ServerProcessor = make(map[string]*ServerProcessor)
-// 		users["host"] = hostProcessor
-// 		var blocker sync.RWMutex = sync.RWMutex{}
-// 		var roomUsers mapCounter = mapCounter{blocker,users}
-// 		var newRoom room = room{roomUsers, roomname}
-// 		addRoom(roomname, &newRoom)
-// 		str := fmt.Sprintf("Succes: The room '%s'has been created succesfully.", roomname)
-// 		succes := message.SuccesMessage{message.INFO_TYPE, str, message.NEW_ROOM_TYPE}
-// 		return succes.GetJSON(), nil
-// 	}
-// 	str := fmt.Sprintf("The '%s' already exists.", roomname)
-// 	fail := message.RoomWarningMessage{message.WARNING_TYPE, str, message.NEW_ROOM_TYPE, roomname}
-// 	return fail.GetJSON(), errors.New("Room name already used")
-// }
-
-
-
 func inviteUsersToRoom(host string, roomName string, usersToInvite []string) (error) {
 	room, err := getRoom(roomName)
 	
@@ -216,29 +184,12 @@ func inviteUsersToRoom(host string, roomName string, usersToInvite []string) (er
 	return errors.New("")
 }
 
-// func inviteUsersToRoom(host string, roomName string, usersToInvite []string) []byte {
-// 	room, err := getRoom(roomName)
-	
-// 	if err != nil {
-// 		warningString := fmt.Sprintf("The room '%s' does not exist.", roomName)
-// 		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.INVITE_TYPE, roomName}
-// 		return warning.GetJSON()
-// 	}
-	
-// 	if isMember := room.verifyRoomMember(host); !isMember {
-// 		warningString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
-// 		warning := message.WarningMessageRoom{message.WARNING_TYPE, warningString, message.ROOM_USERS_TYPE, roomName}
-// 		return warning.GetJSON()
-// 	}
-// 	return nil
-// }
-
 func joinRoom(userName string, roomName string) (error) {
 	room, error := getRoom(roomName)
 	if error != nil {
 		return error
 	}
-	if userHasBeenInvited := room.itHasBeenInvited(userName); !userHasBeenInvited {
+	if userHasBeenInvited := room.verifyInvitedUser(userName); !userHasBeenInvited {
 		errorMessage := fmt.Sprintf("The user has not been invited to '%s'.",
 		roomName)
 		return createError(errorMessage)
