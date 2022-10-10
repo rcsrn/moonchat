@@ -57,8 +57,31 @@ func TestVerifyRoomMember(t *testing.T) {
 
 
 func TestGetMemberList(t *testing.T) {
-	
+	concurrentUserList := make([]string, 3)
+	concurrentUserList[0] = "Person1"
+	concurrentUserList[0] = "Person2"
+	concurrentUserList[0] = "Person3"
+	gottenUserList := testRoom.getMemberList()
+	isRight := compareSlices(concurrentUserList, gottenUserList)
+	if !isRight {
+		t.Errorf("FAIL: the gotten list is not right.")
+	}
 }
 
+func compareSlices(slice1 []string, slice2 []string) (bool) {
+	length1 := len(slice1)
+	length2 := len(slice2)
+	
+	if length1 != length2 {
+		return false
+	}
+	
+	for i := 0; i < length1; i++ {
+		if indicator := strings.Compare(slice1[i], slice2[i]); indicator != 0 {
+			return false
+		}
+	}
+	return true
+}
 
 
