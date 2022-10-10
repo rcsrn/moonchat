@@ -2,10 +2,11 @@ package main
 
 import (
 	"sync"
+	//	"strings"
 )
 
 type room struct {
-	roomUsers mapCounter
+	counter mapCounter
 	roomName string
 }
 
@@ -15,13 +16,13 @@ type mapCounter struct {
 }
 
 func getRoomInstance(roomName string) *room {
-	roomUsers := mapCounter{}
-	var roomInstance room = room{roomUsers, roomName}
+	counter := mapCounter{}
+	var roomInstance room = room{counter, roomName}
 	return &roomInstance
 }
 
 func (room *room) init() {
-	room.roomUsers.users = make (map[string]*ServerProcessor)
+	room.counter.users = make (map[string]*ServerProcessor)
 }
 
 func (room *room) verifyRoomMember(userName string) (bool) {
@@ -36,7 +37,15 @@ func (room *room) itHasBeenInvited(userName string) (bool) {
 	return true
 }
 
-func (room *room) addUser(userName string) {
-	
+func (room *room) availableUsername(userName string) (bool) {
+	room.counter.blocker.RLock()
+	if _, itExists := room.counter.users[userName]; itExists {
+		return false
+	}
+	room.counter.blocker.RUnlock()
+	return true
 }
 
+func (room *room) addUser(userName string) (error) {
+	return nil
+}
