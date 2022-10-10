@@ -40,10 +40,10 @@ func (room *room) verifyInvitedUser(userName string) (bool) {
 func (room *room) verifyUserExistence(userName string) (bool) {
 	room.counter.blocker.RLock()
 	if _, itExists := room.counter.users[userName]; itExists {
-		return false
+		return true
 	}
 	room.counter.blocker.RUnlock()
-	return true
+	return false
 }
 
 func (room *room) addRoomUser(userName string) {
