@@ -38,7 +38,15 @@ func (room *room) verifyRoomMember(userName string) (bool) {
 }
 
 func (room *room) getMemberList() ([]string) {
-	return nil
+	room.counter.blocker.RLock()
+	memberList := make([]string, len(room.counter.users))
+	i := 0
+	for userName, _ := range(room.counter.users) {
+		memberList[i] = userName
+		i++
+	}
+	room.counter.blocker.RUnlock()
+	return memberList
 }
 
 func (room *room) verifyInvitedUser(userName string) (bool) {

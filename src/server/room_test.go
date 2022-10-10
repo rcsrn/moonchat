@@ -59,15 +59,17 @@ func TestVerifyRoomMember(t *testing.T) {
 func TestGetMemberList(t *testing.T) {
 	concurrentUserList := make([]string, 3)
 	concurrentUserList[0] = "Person1"
-	concurrentUserList[0] = "Person2"
-	concurrentUserList[0] = "Person3"
+	concurrentUserList[1] = "Person2"
+	concurrentUserList[2] = "Person3"
 	gottenUserList := testRoom.getMemberList()
 	isRight := compareSlices(concurrentUserList, gottenUserList)
 	if !isRight {
-		t.Errorf("FAIL: the gotten list is not right.")
+		t.Errorf("FAIL: the gotten list is %v and it should be %v .",
+			gottenUserList, concurrentUserList)
 	}
 }
 
+//axuliar function of TestGetMemberlist. Returns true if both slices are equal.
 func compareSlices(slice1 []string, slice2 []string) (bool) {
 	length1 := len(slice1)
 	length2 := len(slice2)
