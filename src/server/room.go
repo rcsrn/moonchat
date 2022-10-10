@@ -33,11 +33,11 @@ func (room *room) getMemberList() ([]string) {
 	return nil
 }
 
-func (room *room) itHasBeenInvited(userName string) (bool) {
+func (room *room) verifyInvitedUser(userName string) (bool) {
 	return true
 }
 
-func (room *room) validateUserName(userName string) (bool) {
+func (room *room) verifyUserExistence(userName string) (bool) {
 	room.counter.blocker.RLock()
 	if _, itExists := room.counter.users[userName]; itExists {
 		return false
