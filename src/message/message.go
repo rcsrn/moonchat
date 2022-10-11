@@ -23,6 +23,7 @@ const (
 	PRIVATE_TYPE = "MESSAGE_FROM"
 	NEW_ROOM_TYPE = "NEW_ROOM"
 	INVITE_TYPE =  "INVITE"
+	INVITATION_TYPE = "INVITATION"
 	JOIN_ROOM_TYPE = "JOIN_ROOM"
 	ROOM_USERS_TYPE = "ROOM_USERS"
 	ROOM_USER_LIST_TYPE = "ROOM_USER_LIST"
@@ -230,3 +231,19 @@ func (mess InviteToRoomMessage) GetJSON() []byte {
 	}
 	return message
 }
+
+type RoomInvitationMessage struct {
+	Type string `json:type`
+	Message string `json:message`
+	Username string `json:username`
+	Roomname string `json:roomname`
+}
+
+func (mess RoomInvitationMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+

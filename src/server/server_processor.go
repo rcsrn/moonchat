@@ -151,6 +151,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 	case message.ROOM_USERS_TYPE:
 		roomUsersCase(processor, gottenMessage["roomname"])
 		break
+	default: processor.disconnectClient()
 	}
 }
 
@@ -244,14 +245,29 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 		processor.sendMessage(warningMessage)
 		return
 	}
-	error:= inviteUsersToRoom(processor.username, roomName, usersToInvite)
+	error:= verifyRoomInvitation(processor.username, roomName, usersToInvite)
 	if error != nil {
 		warningMessage := getRoomWarningMessage(error.Error(), message.INVITE_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 		return
 	}
+	sendInvitation(processor.username, roomName, users)
 	succesMessage := getRoomSuccesMessage("Succes: users have been invited to room", message.INVITE_TYPE, roomName)
 	processor.sendMessage(succesMessage)
+}
+
+func sendInvitation(host string, roomName string, users string) {
+	ArrayOfUsers := toArrayOfUsers(users)
+	for i := 0; i < len(ArrayOfUsers); i++ {
+		fmt.Println("LLEGA AQUI 1")
+		addUserToRoom(roomName, ArrayOfUsers[i])
+		fmt.Println("LLEGA AQUI 2")
+		userProcessor, _ := getUserProcessor(ArrayOfUsers[i])
+		invitationString := fmt.Sprintf("%v invites you to room '%v'",
+		host, roomName)
+		invitationMessage := getRoomInvitationMessage(invitationString, host, roomName)
+		userProcessor.sendMessage(invitationMessage)
+	}
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
@@ -279,12 +295,7 @@ func roomUsersCase(processor *ServerProcessor, roomName string) {
 
 //auxiliar function to convert this line to an array of users. 
 func toArrayOfUsers(line string) ([]string) {
-	line = line[1:len(line) - 1]
 	lines := strings.Split(line, ",")
-	for i := 0; i < len(lines); i++ {
-		lines[i] = strings.Trim(lines[i], " ")
-		lines[i] = lines[i][1:len(lines[i])]
-	}
 	return lines
 }
 
@@ -347,4 +358,9 @@ func getNewStatusMessage(userName string, status string) ([]byte) {
 func getStatusErrorMessage(error string, operation string) ([]byte) {
 	errorMessage := message.StatusErrorMessage{message.ERROR_TYPE, error, operation}
 	return errorMessage.GetJSON()
+}
+
+func getRoomInvitationMessage(invitation string, host string, roomName string) ([]byte) {
+	roomInvitationMessage := message.RoomInvitationMessage{message.INVITATION_TYPE, invitation, host, roomName}
+	return roomInvitationMessage.GetJSON()
 }

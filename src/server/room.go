@@ -56,8 +56,9 @@ func (room *room) verifyInvitedUser(userName string) (bool) {
 	return false
 }
 
-func (room *room) addRoomUser(userName string) {
+func (room *room) addUser(userName string) {
 	userProcessor, _ := getUserProcessor(userName)
+	fmt.Println("INTENTA TOMAR EL LOCK PERO NO PUEDE")
 	room.counter.blocker.Lock()
 	fmt.Println("INICIO DESBLOQUEO")
 	room.counter.users[userName] = userProcessor
