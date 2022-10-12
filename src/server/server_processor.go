@@ -67,9 +67,7 @@ func (processor *ServerProcessor) setUserStatus(newStatus string) {
 func (processor *ServerProcessor) disconnectClient() {
 	processor.connection.Close()
 	if value := strings.Compare(processor.username, ""); value != 0 {
-		counter.blocker.Lock()
 		delete(counter.users, processor.username)
-		counter.blocker.Unlock()
 	}
 }
 

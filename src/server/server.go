@@ -52,49 +52,40 @@ func (server *server) initRooms() {
 }
 
 func addUser(userName string, processor *ServerProcessor) {
-	counter.blocker.Lock()
 	counter.users[userName] = processor
-	counter.blocker.Unlock()
 	m := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 	toAllUsers(processor, m.GetJSON())
 }
 
 func addRoom(roomname string, room *room) {
-	//counter.blocker.Lock()
 	counter.rooms[roomname] = room
-	//counter.blocker.Unlock()
 }
 
 //sends a message just to users that have been added.
 func toAllUsers(processor *ServerProcessor, message []byte) {
-	counter.blocker.RLock()
 	for _, element := range counter.users {
 		if processor == element {
 			continue
 		}
 		element.sendMessage(message)
 	}	
-	counter.blocker.RUnlock()
 }
 
 //Returns the identified user list
 func getUserList() []string {
-	counter.blocker.RLock()
 	var listOfUsers []string
 	for username, _ := range counter.users{
 		listOfUsers = append(listOfUsers, username)
 	}
-	counter.blocker.RUnlock()
 	return listOfUsers
 }
 
 //gets the user received
 func getUserProcessor(userName string)(*ServerProcessor, error){
-	counter.blocker.RLock()
 	if userProcessor, ok := counter.users[userName]; ok {
 		return userProcessor, nil
 	}
-	counter.blocker.RUnlock()
+	
 	errorMessage := fmt.Sprintf("The user '%s' does not exist.",
 		userName)
 	return nil, createError(errorMessage)
@@ -112,11 +103,9 @@ func getRoom(roomName string) (*room, error) {
 }
 
 func verifyUserName(userName string) bool {
-	counter.blocker.RLock()
 	if _, ok := counter.users[userName]; ok {
 		return false
 	}
-	counter.blocker.RUnlock()
 	return true
 }
 
@@ -132,11 +121,9 @@ func verifyStatus(status string) (bool) {
 
 //verifies if the room name is available or not.
 func verifyRoomName(roomName string) (bool) {
-	counter.blocker.RLock()
 	if _, ok := counter.rooms[roomName]; ok {
 		return false;
 	}
-	counter.blocker.RUnlock()
 	return true;
 }
 
@@ -150,9 +137,7 @@ func verifyIdentifiedUsers(users []string) (bool, string) {
 }
 
 func removeOldName(oldName string) {
-	counter.blocker.Lock()
 	delete(counter.users, oldName)
-	counter.blocker.Unlock()
 }
 
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {

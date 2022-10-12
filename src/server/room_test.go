@@ -31,9 +31,9 @@ func TestAddRoomUser(t *testing.T) {
 	if length := len(testRoom.counter.users); length != 0 {
 		t.Errorf("FAIL: there are no users in room.")
 	}
-	testRoom.addRoomUser("Person1")
-	testRoom.addRoomUser("Person2")
-	testRoom.addRoomUser("Person3")
+	testRoom.addUser("Person1")
+	testRoom.addUser("Person2")
+	testRoom.addUser("Person3")
 	
 	if length := len(testRoom.counter.users); length != 3 {
 		t.Errorf("FAIL: there are three users in the room.")

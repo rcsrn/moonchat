@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/rcsrn/moonchat/src/message"
 	"strings"
-	"fmt"
 )
 
 var testProcessor ServerProcessor;
