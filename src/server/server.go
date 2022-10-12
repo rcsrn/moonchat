@@ -52,17 +52,21 @@ func (server *server) initRooms() {
 }
 
 func addUser(userName string, processor *ServerProcessor) {
+	fmt.Println("INTENTA TOMAR LOCK (server.ADDUSER)")
 	counter.blocker.Lock()
 	counter.users[userName] = processor
 	counter.blocker.Unlock()
+	fmt.Println("DESBLOQUEA LOCK (server.ADDUSER)")
 	m := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 	toAllUsers(processor, m.GetJSON())
 }
 
 func addRoom(roomname string, room *room) {
-	//counter.blocker.Lock()
+	fmt.Println("INTENTA TOMAR LOCK (server.ADDROOM)")
+	counter.blocker.Lock()
 	counter.rooms[roomname] = room
-	//counter.blocker.Unlock()
+	counter.blocker.Unlock()
+	fmt.Println("DESBLOQUEA LOCK (server.ADDUSER)")
 }
 
 //sends a message just to users that have been added.
@@ -112,11 +116,13 @@ func getRoom(roomName string) (*room, error) {
 }
 
 func verifyUserName(userName string) bool {
+	fmt.Println("INTENTA TOMAR LOCK (server.VerifyUsername)")
 	counter.blocker.RLock()
 	if _, ok := counter.users[userName]; ok {
 		return false
 	}
 	counter.blocker.RUnlock()
+	fmt.Println("LIBERA LOCK (server.VerifyUsername)")
 	return true
 }
 
