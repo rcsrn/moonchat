@@ -257,10 +257,8 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 func sendInvitation(host string, roomName string, users string) {
 	ArrayOfUsers := toArrayOfUsers(users)
 	for i := 0; i < len(ArrayOfUsers); i++ {
-		fmt.Println("LLEGA AQUI 1")
-		addUserToRoom(roomName, ArrayOfUsers[i])
-		fmt.Println("LLEGA AQUI 2")
 		userProcessor, _ := getUserProcessor(ArrayOfUsers[i])
+		addInvitedUser(roomName, userProcessor.username, userProcessor)
 		invitationString := fmt.Sprintf("%v invites you to room '%v'",
 		host, roomName)
 		invitationMessage := getRoomInvitationMessage(invitationString, host, roomName)
@@ -269,7 +267,7 @@ func sendInvitation(host string, roomName string, users string) {
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
-	err := joinRoom(processor.username, roomName)
+	err := addUserToRoom(processor.username, roomName, processor)
 	if err != nil {
 		processor.sendMessage(getRoomWarningMessage(err.Error(), message.JOIN_ROOM_TYPE, roomName))
 		return

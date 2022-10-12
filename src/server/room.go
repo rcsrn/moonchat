@@ -50,7 +50,11 @@ func (room *room) verifyInvitedUser(userName string) (bool) {
 	return false
 }
 
-func (room *room) addUser(userName string) {
-	userProcessor, _ := getUserProcessor(userName)
+func (room *room) addUser(userName string, userProcessor *ServerProcessor) {
 	room.counter.users[userName] = userProcessor
 }
+
+func (room *room) addInvitedUser(userName string, userProcessor *ServerProcessor) {
+	room.counter.invitedUsers[userName] = userProcessor
+}
+

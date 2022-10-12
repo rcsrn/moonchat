@@ -147,7 +147,7 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string)
 	if isRoomNameValid := verifyRoomName(roomName); isRoomNameValid {
 		newRoom := getRoomInstance(roomName)
 		newRoom.init()
-		newRoom.addUser(host)
+		newRoom.addUser(host, hostProcessor)
 		addRoom(roomName, newRoom)
 		return nil
 	}
@@ -171,22 +171,23 @@ func verifyRoomInvitation(host string, roomName string, usersToInvite []string) 
 	return nil
 }
 
-func addUserToRoom(roomName string, userName string) {
+
+func addInvitedUser(roomName string, userName string, userProcessor *ServerProcessor) {
 	room, _ := getRoom(roomName)
-	room.addUser(userName)
+	room.addInvitedUser(userName, userProcessor)
 }
 
-func joinRoom(userName string, roomName string) (error) {
+func addUserToRoom(userName string, roomName string, userProcessor *ServerProcessor) (error) {
 	room, error := getRoom(roomName)
 	if error != nil {
 		return error
 	}
 	if userHasBeenInvited := room.verifyInvitedUser(userName); !userHasBeenInvited {
 		errorMessage := fmt.Sprintf("The user has not been invited to '%s'.",
-		roomName)
+			roomName)
 		return createError(errorMessage)
 	}
-	room.addUser(userName)
+	room.addUser(userName, userProcessor)
 	return nil
 }
 
