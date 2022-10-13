@@ -102,6 +102,7 @@ func getRoom(roomName string) (*room, error) {
 	return room, nil
 }
 
+
 func verifyUserName(userName string) bool {
 	if _, ok := counter.users[userName]; ok {
 		return false
@@ -195,9 +196,13 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 	return nil
 }
 
-func toAllRoomUsers(transmitter string, roomName string, message []byte) {
-	room, _:= getRoom(roomName)
+func sendMessageToRoom(transmitter string, roomName string, message []byte) (error) {
+	room, error:= getRoom(roomName)
+	if  error != nil {
+		return error
+	}
 	room.sendToAllUsers(transmitter, message)
+	return nil
 }
 
 func getRoomUserList(userName string, roomName string) ([]string, error) {

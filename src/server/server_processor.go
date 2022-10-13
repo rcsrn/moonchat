@@ -149,6 +149,8 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 	case message.ROOM_USERS_TYPE:
 		roomUsersCase(processor, gottenMessage["roomname"])
 		break
+	case message.ROOM_MESSAGE_TYPE:
+		roomMessageCase(processor, gottenMessage["roomname"], gottenMessage["message"])
 	default: processor.disconnectClient()
 	}
 }
@@ -268,13 +270,14 @@ func sendInvitation(host string, roomName string, users string) {
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
-	err := addUserToRoom(processor.username, roomName, processor)
-	if err != nil {
-		processor.sendMessage(getRoomWarningMessage(err.Error(), message.JOIN_ROOM_TYPE, roomName))
+	error := addUserToRoom(processor.username, roomName, processor)
+	if error != nil {
+		processor.sendMessage(getRoomWarningMessage(error.Error(), message.JOIN_ROOM_TYPE, roomName))
 		return
 	}
+	
 	joinedMessage := getJoinedMessage(roomName, processor.username)
-	toAllRoomUsers(processor.username, roomName, joinedMessage)
+	sendMessageToRoom(processor.username, roomName, joinedMessage)
 	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
 		roomName)
 	succesMessage := getRoomSuccesMessage(succesString, message.JOIN_ROOM_TYPE, roomName)
@@ -296,6 +299,17 @@ func roomUsersCase(processor *ServerProcessor, roomName string) {
 func toArrayOfUsers(line string) ([]string) {
 	lines := strings.Split(line, ",")
 	return lines
+}
+
+func roomMessageCase(processor *ServerProcessor, roomName string, messageToSend string) {
+	messageToSend = fmt.Sprintf("[%v]: ", roomName) + messageToSend
+	messageToRoomUsers := getRoomMessage(roomName, processor.username, messageToSend)
+	error := sendMessageToRoom(processor.username, roomName, messageToRoomUsers)
+	if error != nil {
+		warningMessage := getRoomWarningMessage(error.Error(), message.ROOM_MESSAGE_TYPE ,roomName)
+		processor.sendMessage(warningMessage)
+		return
+	}
 }
 
 func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
@@ -367,4 +381,9 @@ func getRoomInvitationMessage(invitation string, host string, roomName string) (
 func getJoinedMessage(roomName string, userName string) ([]byte) {
 	joinedMessage := message.JoinedRoomMessage{message.JOINED_ROOM_TYPE, roomName, userName}
 	return joinedMessage.GetJSON()
+}
+
+func getRoomMessage(roomName string, userName string, messageToSend string) ([]byte) {
+	roomMessage := message.RoomMessage{message.ROOM_MESSAGE_FROM_TYPE, roomName, userName, messageToSend}
+	return roomMessage.GetJSON()
 }

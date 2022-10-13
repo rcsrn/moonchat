@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	PUBLIC_MESSAGE_FROM_TYPE = "PUBLIC_MESSAGE_FROM"
+	PUBLIC_MESSAGE_FROM_TYPE = "PUBLIC_MESSAGE_FROM" 
 	PUBLIC_TYPE = "PUBLIC_MESSAGE"
 	ERROR_TYPE = "ERROR"
 	WARNING_TYPE = "WARNING"
@@ -28,6 +28,9 @@ const (
 	JOINED_ROOM_TYPE = "JOINED_ROOM_TYPE"
 	ROOM_USERS_TYPE = "ROOM_USERS"
 	ROOM_USER_LIST_TYPE = "ROOM_USER_LIST"
+	ROOM_MESSAGE_TYPE = "ROOM_MESSAGE"
+	ROOM_MESSAGE_FROM_TYPE = "ROOM_MESSAGE_FROM"
+	LEAVE_ROOM_TYPE = "LEAVE_ROOM"
 )
 
 type Message interface {
@@ -261,3 +264,19 @@ func (mess JoinedRoomMessage) GetJSON() []byte {
 	}
 	return message
 }
+
+type RoomMessage struct {
+	Type string `json:"type"`
+	Roomname string `json:"roomname"`
+	Username string `json:"username"`
+	Message string `json:"message"`
+}
+
+func (mess RoomMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
