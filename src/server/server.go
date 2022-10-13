@@ -191,6 +191,11 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 	return nil
 }
 
+func toAllRoomUsers(transmitter string, roomName string, message []byte) {
+	room, _:= getRoom(roomName)
+	room.sendToAllUsers(transmitter, message)
+}
+
 func getRoomUserList(userName string, roomName string) ([]string, error) {
 	room, err := getRoom(roomName)
 	if err != nil {

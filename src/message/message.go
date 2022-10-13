@@ -25,6 +25,7 @@ const (
 	INVITE_TYPE =  "INVITE"
 	INVITATION_TYPE = "INVITATION"
 	JOIN_ROOM_TYPE = "JOIN_ROOM"
+	JOINED_ROOM_TYPE = "JOINED_ROOM_TYPE"
 	ROOM_USERS_TYPE = "ROOM_USERS"
 	ROOM_USER_LIST_TYPE = "ROOM_USER_LIST"
 )
@@ -165,7 +166,7 @@ func (mess NewUserMessage) GetJSON() []byte {
 type NewStatusMessage struct {
 	Type string `json:"type"`
 	Username string `json:"username"`
-	Status string `json:status`
+	Status string `json:"status"`
 }
 
 func (mess NewStatusMessage) GetJSON() []byte {
@@ -190,8 +191,8 @@ func (mess DisconnectedMessage) GetJSON() []byte {
 }
 
 type UserList struct {
-	Type string `json:type`
-	Usernames []string `json:usernames`	
+	Type string `json:"type"`
+	Usernames []string `json:"usernames"`	
 }
 
 func (mess UserList) GetJSON() []byte {
@@ -203,9 +204,9 @@ func (mess UserList) GetJSON() []byte {
 }
 
 type NewMessage struct {
-	Type string `json:type`
-	Username string `json:username`
-	Message string `json:message`
+	Type string `json:"type"`
+	Username string `json:"username"`
+	Message string `json:"message"`
 }
 
 func (mess NewMessage) GetJSON() []byte {
@@ -219,9 +220,9 @@ func (mess NewMessage) GetJSON() []byte {
 //Client Messages:
 
 type InviteToRoomMessage struct {
-	Type string `json:type`
-	Roomname string `json:roomname`
-	Usernames []string `json:usernames`
+	Type string `json:"type"`
+	Roomname string `json:"roomname"`
+	Usernames []string `json:"usernames"`
 }
 
 func (mess InviteToRoomMessage) GetJSON() []byte {
@@ -233,10 +234,10 @@ func (mess InviteToRoomMessage) GetJSON() []byte {
 }
 
 type RoomInvitationMessage struct {
-	Type string `json:type`
-	Message string `json:message`
-	Username string `json:username`
-	Roomname string `json:roomname`
+	Type string `json:"type"`
+	Message string `json:"message"`
+	Username string `json:"username"`
+	Roomname string `json:"roomname"`
 }
 
 func (mess RoomInvitationMessage) GetJSON() []byte {
@@ -247,3 +248,16 @@ func (mess RoomInvitationMessage) GetJSON() []byte {
 	return message
 }
 
+type JoinedRoomMessage struct {
+	Type string `json:"type"`
+	Roomname string `json:"roomname"`
+	Username string `json:"username"`
+}
+
+func (mess JoinedRoomMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}

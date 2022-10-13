@@ -272,6 +272,8 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 		processor.sendMessage(getRoomWarningMessage(err.Error(), message.JOIN_ROOM_TYPE, roomName))
 		return
 	}
+	joinedMessage := getJoinedMessage(roomName, processor.username)
+	toAllRoomUsers(processor.username, roomName, joinedMessage)
 	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
 		roomName)
 	succesMessage := getRoomSuccesMessage(succesString, message.JOIN_ROOM_TYPE, roomName)
@@ -359,4 +361,9 @@ func getStatusErrorMessage(error string, operation string) ([]byte) {
 func getRoomInvitationMessage(invitation string, host string, roomName string) ([]byte) {
 	roomInvitationMessage := message.RoomInvitationMessage{message.INVITATION_TYPE, invitation, host, roomName}
 	return roomInvitationMessage.GetJSON()
+}
+
+func getJoinedMessage(roomName string, userName string) ([]byte) {
+	joinedMessage := message.JoinedRoomMessage{message.JOINED_ROOM_TYPE, roomName, userName}
+	return joinedMessage.GetJSON()
 }

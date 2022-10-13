@@ -2,6 +2,7 @@ package main
 
 import (
 	"sync"
+	"strings"
 )
 
 type room struct {
@@ -58,3 +59,11 @@ func (room *room) addInvitedUser(userName string, userProcessor *ServerProcessor
 	room.counter.invitedUsers[userName] = userProcessor
 }
 
+func (room *room) sendToAllUsers(transmitter string, message []byte) {
+	for userName, userProcessor := range (room.counter.users) {
+		if val := strings.Compare(userName, transmitter); val == 0 {
+			continue
+		}
+		userProcessor.sendMessage(message)
+	}
+}
