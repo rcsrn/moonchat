@@ -3,6 +3,7 @@ package main
 import (
 	"sync"
 	"strings"
+	"fmt"
 )
 
 type room struct {
@@ -69,7 +70,10 @@ func (room *room) sendMessageToRoom(transmitter string, message []byte) {
 }
 
 func (room *room) removeUser(userName string) {
+	fmt.Println("3333333333333333333333333333")
 	delete(room.counter.users, userName)
+	fmt.Printf("USERS: %v\n", room.counter.users)
+	fmt.Printf("INVITED: %v\n", room.counter.invitedUsers)
 }
 
 func (room *room) removeInvitedUser(userName string) {

@@ -306,7 +306,9 @@ func toArrayOfUsers(line string) ([]string) {
 
 func roomMessageCase(processor *ServerProcessor, roomName string, messageToSend string) {
 	messageToSend = fmt.Sprintf("[%v]: ", roomName) + messageToSend
+	
 	messageToRoomUsers := getRoomMessage(roomName, processor.username, messageToSend)
+	
 	error := sendMessageToRoom(processor.username, roomName, messageToRoomUsers)
 	if error != nil {
 		warningMessage := getRoomWarningMessage(error.Error(), message.ROOM_MESSAGE_TYPE ,roomName)
@@ -322,8 +324,14 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 		processor.sendMessage(warningMessage)
 		return
 	}
+	
+	succesString := fmt.Sprintf("Succes: You have been left the room '%s'",
+	roomName)
+	succesMessage := getRoomSuccesMessage(succesString, message.LEAVE_ROOM_TYPE, roomName)
+	processor.sendMessage(succesMessage)
+	
 	leftRoomMessage := getLeftRoomMessage(roomName, userName)
-	sendMessageToAllUsers(processor, leftRoomMessage)
+	sendMessageToRoom(userName, roomName, leftRoomMessage)
 }
 
 func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
