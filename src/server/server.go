@@ -54,7 +54,7 @@ func (server *server) initRooms() {
 func addUser(userName string, processor *ServerProcessor) {
 	counter.users[userName] = processor
 	m := message.NewUserMessage{message.NEW_USER_TYPE, userName}
-	toAllUsers(processor, m.GetJSON())
+	sendMessageToAllUsers(processor, m.GetJSON())
 }
 
 func addRoom(roomname string, room *room) {
@@ -62,7 +62,7 @@ func addRoom(roomname string, room *room) {
 }
 
 //sends a message just to users that have been added.
-func toAllUsers(processor *ServerProcessor, message []byte) {
+func sendMessageToAllUsers(processor *ServerProcessor, message []byte) {
 	for _, element := range counter.users {
 		if processor == element {
 			continue
@@ -172,6 +172,20 @@ func verifyRoomInvitation(host string, roomName string, usersToInvite []string) 
 	return nil
 }
 
+func disconnectUserFromRoom(userName string, roomName string) (error) {
+	room, error1 := getRoom(roomName)
+	if error1 != nil {
+		return error1
+	}
+	isInvited := room.verifyInvitedUser(userName)
+	isMember := room.verifyRoomMember(userName)
+	if !isInvited || !isMember {
+		errorString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
+		return createError(errorString)
+	}
+	room.removeUser(userName)
+	return nil
+}
 
 func addInvitedUser(roomName string, userName string, userProcessor *ServerProcessor) {
 	room, _ := getRoom(roomName)
@@ -196,12 +210,17 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 	return nil
 }
 
+func removeInvitedUserInRoom(userName string, roomName string) {
+	room, _ := getRoom(roomName)
+	room.removeInvitedUser(userName)
+}
+
 func sendMessageToRoom(transmitter string, roomName string, message []byte) (error) {
 	room, error:= getRoom(roomName)
 	if  error != nil {
 		return error
 	}
-	room.sendToAllUsers(transmitter, message)
+	room.sendMessageToRoom(transmitter, message)
 	return nil
 }
 

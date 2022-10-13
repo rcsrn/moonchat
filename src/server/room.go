@@ -59,7 +59,7 @@ func (room *room) addInvitedUser(userName string, userProcessor *ServerProcessor
 	room.counter.invitedUsers[userName] = userProcessor
 }
 
-func (room *room) sendToAllUsers(transmitter string, message []byte) {
+func (room *room) sendMessageToRoom(transmitter string, message []byte) {
 	for userName, userProcessor := range (room.counter.users) {
 		if val := strings.Compare(userName, transmitter); val == 0 {
 			continue
@@ -68,3 +68,10 @@ func (room *room) sendToAllUsers(transmitter string, message []byte) {
 	}
 }
 
+func (room *room) removeUser(userName string) {
+	delete(room.counter.users, userName)
+}
+
+func (room *room) removeInvitedUser(userName string) {
+	delete(room.counter.invitedUsers, userName)
+}

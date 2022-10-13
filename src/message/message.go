@@ -31,6 +31,7 @@ const (
 	ROOM_MESSAGE_TYPE = "ROOM_MESSAGE"
 	ROOM_MESSAGE_FROM_TYPE = "ROOM_MESSAGE_FROM"
 	LEAVE_ROOM_TYPE = "LEAVE_ROOM"
+	LEFT_ROOM_TYPE = "LEFT_ROOM_TYPE"
 )
 
 type Message interface {
@@ -273,6 +274,20 @@ type RoomMessage struct {
 }
 
 func (mess RoomMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
+type LeftRoomMessage struct {
+	Type string `json:"type"`
+	Roomname string `json:"roomname"`
+	Username string `json:"username"`	
+}
+
+func (mess LeftRoomMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")

@@ -37,7 +37,7 @@ func (processor *ServerProcessor) readMessages() {
 			processor.disconnectClient()
 			if processor.identified {
 				disconnectedMessage := getDisconnectedMessage(processor.username)
-				toAllUsers(processor, disconnectedMessage)
+				sendMessageToAllUsers(processor, disconnectedMessage)
 			}
 			log.Printf("Error while unmarshaling: %v\n", err2.Error())
 			if processor.identified == true {
@@ -151,6 +151,8 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		break
 	case message.ROOM_MESSAGE_TYPE:
 		roomMessageCase(processor, gottenMessage["roomname"], gottenMessage["message"])
+	case message.LEAVE_ROOM_TYPE:
+		leaveMessageCase(processor, processor.username, gottenMessage["roomname"])
 	default: processor.disconnectClient()
 	}
 }
@@ -168,13 +170,13 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 		succesMessage := getSuccesMessage("Succes: status changed succesfully", message.STATUS_TYPE)
 		processor.sendMessage(succesMessage)
 		messageToUsers := getNewStatusMessage(processor.username, newStatus)
-		toAllUsers(processor, messageToUsers)
+		sendMessageToAllUsers(processor, messageToUsers)
 	} else {
 		errorMessage := getStatusErrorMessage("Invalid status!", message.STATUS_TYPE)
 		processor.sendMessage(errorMessage)
 		processor.disconnectClient()
 		messageToUsers := getDisconnectedMessage(processor.username)
-		toAllUsers(processor, messageToUsers)
+		sendMessageToAllUsers(processor, messageToUsers)
 	}
 }
 
@@ -205,12 +207,12 @@ func userListCase(processor *ServerProcessor) {
 func disconnectClientCase(processor *ServerProcessor) {
 	processor.disconnectClient()
 	disconnectedMessage := getDisconnectedMessage(processor.username)
-	toAllUsers(processor, disconnectedMessage)
+	sendMessageToAllUsers(processor, disconnectedMessage)
 }
 
 func publicMessageCase(processor *ServerProcessor, publicMessageToSend string) {
 	publicMessage := getPublicMessage(processor.username, publicMessageToSend)
-	toAllUsers(processor, publicMessage)	
+	sendMessageToAllUsers(processor, publicMessage)	
 }
 
 func privateMessageCase(processor *ServerProcessor, receptor string, privateMessageToSend string) {
@@ -276,6 +278,7 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 		return
 	}
 	
+	removeInvitedUserInRoom(processor.username, roomName)
 	joinedMessage := getJoinedMessage(roomName, processor.username)
 	sendMessageToRoom(processor.username, roomName, joinedMessage)
 	succesString := fmt.Sprintf("Succes: you have been added to room '%s'!",
@@ -310,6 +313,17 @@ func roomMessageCase(processor *ServerProcessor, roomName string, messageToSend 
 		processor.sendMessage(warningMessage)
 		return
 	}
+}
+
+func leaveMessageCase(processor *ServerProcessor, userName string, roomName string) {
+	error := disconnectUserFromRoom(userName, roomName)
+	if error != nil {
+		warningMessage := getRoomWarningMessage(error.Error(), message.LEAVE_ROOM_TYPE, roomName)
+		processor.sendMessage(warningMessage)
+		return
+	}
+	leftRoomMessage := getLeftRoomMessage(roomName, userName)
+	sendMessageToAllUsers(processor, leftRoomMessage)
 }
 
 func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
@@ -387,3 +401,9 @@ func getRoomMessage(roomName string, userName string, messageToSend string) ([]b
 	roomMessage := message.RoomMessage{message.ROOM_MESSAGE_FROM_TYPE, roomName, userName, messageToSend}
 	return roomMessage.GetJSON()
 }
+
+func getLeftRoomMessage(roomName string, userName string) ([]byte) {
+	leftRoomMessage := message.LeftRoomMessage{message.LEFT_ROOM_TYPE, roomName, userName}
+	return leftRoomMessage.GetJSON()
+}
+
