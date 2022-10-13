@@ -182,10 +182,14 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 	if error != nil {
 		return error
 	}
-	if userHasBeenInvited := room.verifyInvitedUser(userName); !userHasBeenInvited {
-		errorMessage := fmt.Sprintf("The user has not been invited to '%s'.",
+	if isInvited := room.verifyInvitedUser(userName); !isInvited {
+		errorString := fmt.Sprintf("The user has not been invited to '%s'.",
 			roomName)
-		return createError(errorMessage)
+		return createError(errorString)
+	}
+
+	if isMember := room.verifyRoomMember(userName); isMember {
+		return createError("The user is already in the room!")
 	}
 	room.addUser(userName, userProcessor)
 	return nil
@@ -201,13 +205,13 @@ func getRoomUserList(userName string, roomName string) ([]string, error) {
 	if err != nil {
 		errorString := fmt.Sprintf("The room '%s' does not exist.",
 			roomName)
-		return nil, errors.New(errorString)
+		return nil, createError(errorString)
 	}
 	if isMember := room.verifyRoomMember(userName); !isMember {
 		errorString := fmt.Sprintf("The user '%s' is not a member of the room '%s'",
 			userName,
 			roomName)
-		return nil , errors.New(errorString)
+		return nil , createError(errorString)
 	}
 	return room.getMemberList(), nil
 }

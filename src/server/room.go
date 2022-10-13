@@ -67,3 +67,4 @@ func (room *room) sendToAllUsers(transmitter string, message []byte) {
 		userProcessor.sendMessage(message)
 	}
 }
+

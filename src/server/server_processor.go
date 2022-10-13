@@ -228,6 +228,7 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 	} else {
+		addInvitedUser(roomName, processor.username, processor)
 		succesString := fmt.Sprintf("Succes: The room '%s' has been created!",
 		roomName)
 		succesMessage := getRoomSuccesMessage(succesString, message.NEW_ROOM_TYPE, roomName)
