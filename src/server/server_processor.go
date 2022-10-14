@@ -21,7 +21,7 @@ type ServerProcessor struct {
 func (processor *ServerProcessor) readMessages() {
 	for {
 		buffer := make([]byte, 1024)
-		length, err1 := processor.connection.Read(buffer)
+		numBitsRead, err1 := processor.connection.Read(buffer)
 		
 		if err1 != nil {
 			fmt.Println("Error while reading:", err1.Error())
@@ -29,18 +29,22 @@ func (processor *ServerProcessor) readMessages() {
 			processor.disconnectClient()
 			break
 		}
-		
-		messageReceived, err2 := processor.unmarshalJSON(buffer[:length])
+
+		//It is necessary to specify the exact number of bits read by Read() method to unmarshal.
+		messageReceived, err2 := processor.unmarshalJSON(buffer[:numBitsRead])
 		
 		if err2 != nil {
+			
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			processor.disconnectClient()
 			if processor.identified {
 				disconnectedMessage := getDisconnectedMessage(processor.username)
 				sendMessageToAllUsers(processor, disconnectedMessage)
 			}
+			
 			log.Printf("Error while unmarshaling: %v\n", err2.Error())
-			if processor.identified == true {
+			
+			if processor.identified {
 				log.Printf("Client '%s' disconnected", processor.username)
 			} else {
 				log.Printf("Client disconnected")
@@ -48,8 +52,9 @@ func (processor *ServerProcessor) readMessages() {
 			break
 		}
 
+		//Server does not process any message from a non identified user.
 		if !processor.identified {
-			if val := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); val != 0 {
+			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
 				continue
 			}
 		}
