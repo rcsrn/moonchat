@@ -102,7 +102,6 @@ func getRoom(roomName string) (*room, error) {
 	return room, nil
 }
 
-
 func verifyUserName(userName string) bool {
 	if _, ok := counter.users[userName]; ok {
 		return false

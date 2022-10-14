@@ -30,7 +30,7 @@ func (processor *ServerProcessor) readMessages() {
 			break
 		}
 		
-		messageRecieved, err2 := processor.unmarshalJSON(buffer[:length])
+		messageReceived, err2 := processor.unmarshalJSON(buffer[:length])
 		
 		if err2 != nil {
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
@@ -47,9 +47,15 @@ func (processor *ServerProcessor) readMessages() {
 			}
 			break
 		}
+
+		if !processor.identified {
+			if val := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); val != 0 {
+				continue
+			}
+		}
 		
-		processor.processMessage(messageRecieved)
-		fmt.Printf("message received: %v by %v\n", messageRecieved, processor.username)
+		processor.processMessage(messageReceived)
+		fmt.Printf("message received: %v by %v\n", messageReceived, processor.username)
 	}
 }
 
