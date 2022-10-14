@@ -84,7 +84,7 @@ func TestGetMemberList(t *testing.T) {
 	}
 }
 
-//axuliar function of TestGetMemberlist. Returns true if both slices are equal.
+//axuliar function of TestGetMemberlist. Returns true if
 func compareSlices(slice1 []string, slice2 []string) (bool) {
 	length1 := len(slice1)
 	length2 := len(slice2)
@@ -92,12 +92,21 @@ func compareSlices(slice1 []string, slice2 []string) (bool) {
 	if length1 != length2 {
 		return false
 	}
-	
-	for i := 0; i < length1; i++ {
-		if indicator := strings.Compare(slice1[i], slice2[i]); indicator != 0 {
+
+	var isFound bool = true
+	var i int
+	var j int
+	for i = 0; i < length1; i++ {
+		for j = 0; j < length2; j++ {
+			if val := strings.Compare(slice1[i], slice2[j]); val == 0 {
+				isFound = true
+			}
+		}
+		if !isFound {
 			return false
 		}
 	}
+	
 	return true
 }
 
