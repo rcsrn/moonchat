@@ -176,9 +176,8 @@ func disconnectUserFromRoom(userName string, roomName string) (error) {
 	if error1 != nil {
 		return error1
 	}
-	isInvited := room.verifyInvitedUser(userName)
 	isMember := room.verifyRoomMember(userName)
-	if !isInvited || !isMember {
+	if !isMember {
 		errorString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
 		return createError(errorString)
 	}

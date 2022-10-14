@@ -33,8 +33,7 @@ func (processor *ServerProcessor) readMessages() {
 		//It is necessary to specify the exact number of bits read by Read() method to unmarshal.
 		messageReceived, err2 := processor.unmarshalJSON(buffer[:numBitsRead])
 		
-		if err2 != nil {
-			
+		if err2 != nil {			
 			processor.sendMessage([]byte("Sorry, bad operation...\n"))
 			processor.disconnectClient()
 			if processor.identified {
