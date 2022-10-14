@@ -7,6 +7,7 @@ import (
 	"github.com/rcsrn/moonchat/cmd/message"
 	"strings"
 	"log"
+	"sync"
 )
 
 type ServerProcessor struct {
@@ -14,8 +15,21 @@ type ServerProcessor struct {
 	username string
 	userStatus string
 	identified bool
+	rooms []string
 }
 
+type roomCounter struct {
+	sync.RWMutex
+	rooms []string
+}
+
+func (processor *ServerProcessor) getInstance() *ServerProcessor {
+	
+}
+
+func (processor *ServerProcessor) init() {
+	processor.init = make ([]string, 512)
+}
 
 // reads sent messages by client
 func (processor *ServerProcessor) readMessages() {
@@ -51,7 +65,6 @@ func (processor *ServerProcessor) readMessages() {
 			break
 		}
 
-		//Server does not process any message from a non identified user.
 		if !processor.identified {
 			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
 				continue
