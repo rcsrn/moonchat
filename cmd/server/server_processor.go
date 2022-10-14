@@ -23,12 +23,9 @@ type roomCounter struct {
 	rooms []string
 }
 
-func (processor *ServerProcessor) getInstance() *ServerProcessor {
-	
-}
-
-func (processor *ServerProcessor) init() {
-	processor.init = make ([]string, 512)
+func getServerProcessorInstance(connection net.Conn) *ServerProcessor {
+	server := ServerProcessor{connection, "", "ACTIVE", false, make([]string, 512)}
+	return &server
 }
 
 // reads sent messages by client
