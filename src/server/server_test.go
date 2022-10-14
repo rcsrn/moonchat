@@ -1,12 +1,9 @@
 package main
 
 import(
-	//"fmt"
+	//	"fmt"
 	"testing"
-	//"github.com/rcsrn/moonchat/src/message"
 	"strings"
-	//"encoding/json"
-	//reflect"
 )
 
 func initRooms() {
@@ -20,8 +17,8 @@ func cleanUserMap() {
 }
 
 func cleanRoomMap () {
-	for k, _ := range counter.rooms {
-		delete(counter.users, k)
+	for k := range counter.rooms {
+		delete(counter.rooms, k)
 	}
 }
 
@@ -95,23 +92,41 @@ func TestAddRoom(t *testing.T) {
 }
 
 func TestCreateNewRoom(t *testing.T) {
-
+	
 }
 
-func TestJoinRoom(t *testing.T) {
-	if error := joinRoom("", ""); error == nil {
-		t.Errorf("FAIL: both invalid name of room and user.")
+func TestAddUserToRoom(t *testing.T) {
+	cleanRoomMap()
+	
+	roomTest := room{}
+	roomTest.init()
+	userProcessor := ServerProcessor{}
+	
+	counter.rooms["roomTest"] = &roomTest
+	
+	error1 := addUserToRoom("Juan", "roomTest", &userProcessor)
+	if error1 == nil {
+		t.Errorf("FAIL: %v", error1.Error())
 	}
-	if error := joinRoom("", "Juan"); error == nil {
-		t.Errorf("FAIL: invalid room name.")
+
+	roomTest.counter.invitedUsers["Juan"] = &userProcessor
+	
+	error2 := addUserToRoom("Juan", "roomTest", &userProcessor)
+
+	if error2 != nil {
+		t.Errorf("FAIL: this error should not been thrown.")
 	}
-	if error := joinRoom("SALA1", "Jack"); error == nil {
-		t.Errorf("FAIL: user is not in identified list.")
+
+	if processor, itExists := roomTest.counter.users["Juan"]; !itExists || processor != &userProcessor {
+		t.Errorf("FAIL: the user has not been added correctly.")
 	}
-	if error := joinRoom("SALA1", "Juan"); error == nil {
-		t.Errorf("FAIL: the user has not been invited to room.")
+	
+	error3 := addUserToRoom("Juan", "", &userProcessor)
+	
+	if error3 == nil {
+		t.Errorf("FAIL: %v", error3.Error())
 	}
-	//FALTA EL CASO CUANDO SI ESTA INVITADO
+	
 }
 
 func TestVerifyUserName(t *testing.T) {

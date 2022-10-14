@@ -31,9 +31,24 @@ func TestAddRoomUser(t *testing.T) {
 	if length := len(testRoom.counter.users); length != 0 {
 		t.Errorf("FAIL: there are no users in room.")
 	}
-	testRoom.addUser("Person1")
-	testRoom.addUser("Person2")
-	testRoom.addUser("Person3")
+
+	processor1 := ServerProcessor{}
+	processor2 := ServerProcessor{}
+	processor3 := ServerProcessor{}
+	
+	testRoom.addUser("Person1", &processor1)
+	testRoom.addUser("Person2", &processor2)
+	testRoom.addUser("Person3", &processor3)
+
+	if processor := testRoom.counter.users["Person1"]; processor != &processor1 {
+		t.Errorf("FAIL: the user has not been added correctly.")
+	}
+	if processor := testRoom.counter.users["Person1"]; processor != &processor1 {
+		t.Errorf("FAIL: the user has not been added correctly.")
+	}
+	if processor := testRoom.counter.users["Person1"]; processor != &processor1 {
+		t.Errorf("FAIL: the user has not been added correctly.")
+	}
 	
 	if length := len(testRoom.counter.users); length != 3 {
 		t.Errorf("FAIL: there are three users in the room.")
