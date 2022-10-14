@@ -4,7 +4,7 @@ import (
 	"net"
 	"fmt"
 	"encoding/json"
-	"github.com/rcsrn/moonchat/src/message"
+	"github.com/rcsrn/moonchat/cmd/message"
 	"strings"
 	"log"
 )

@@ -3,7 +3,7 @@ package main
 import(
 	"net"
 	"fmt"
-	"github.com/rcsrn/moonchat/src/message"
+	"github.com/rcsrn/moonchat/cmd/message"
 	"sync"
 	"errors"
 	"strings"	
@@ -25,7 +25,7 @@ const (
 	SERVER_TYPE = "tcp"
 )
 
-func (server *server) WaitForConnections() {
+func (server *server) waitForConnections() {
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")

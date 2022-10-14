@@ -8,5 +8,5 @@ type chatAplication struct {
 func (chat *chatAplication)start() {
 	chat.server = server{}
 	chat.server.initRooms()
-	chat.server.WaitForConnections()
+	chat.server.waitForConnections()
 }
