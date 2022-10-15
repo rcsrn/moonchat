@@ -32,33 +32,18 @@ func getServerProcessorInstance(connection net.Conn) *ServerProcessor {
 func (processor *ServerProcessor) readMessages() {
 	for {
 		buffer := make([]byte, 1024)
-		numBitsRead, err1 := processor.connection.Read(buffer)
+		numBitsRead, error1 := processor.connection.Read(buffer)
 		
-		if err1 != nil {
-			fmt.Println("Error while reading:", err1.Error())
-			processor.sendMessage([]byte("Sorry, something went wrong :(\n"))
-			processor.disconnectClient()
+		if error1 != nil {
+			errorWhileReading(processor, error1)
 			break
 		}
 
 		//It is necessary to specify the exact number of bits read by Read() method to unmarshal.
-		messageReceived, err2 := processor.unmarshalJSON(buffer[:numBitsRead])
+		messageReceived, error2 := processor.unmarshalJSON(buffer[:numBitsRead])
 		
-		if err2 != nil {			
-			processor.sendMessage([]byte("Sorry, bad operation...\n"))
-			processor.disconnectClient()
-			if processor.identified {
-				disconnectedMessage := getDisconnectedMessage(processor.username)
-				sendMessageToAllUsers(processor, disconnectedMessage)
-			}
-			
-			log.Printf("Error while unmarshaling: %v\n", err2.Error())
-			
-			if processor.identified {
-				log.Printf("Client '%s' disconnected", processor.username)
-			} else {
-				log.Printf("Client disconnected")
-			}
+		if error2 != nil {
+			errorWhileUnmarshaling(processor, error2)
 			break
 		}
 
@@ -72,6 +57,35 @@ func (processor *ServerProcessor) readMessages() {
 		
 		processor.processMessage(messageReceived)
 		fmt.Printf("message received: %v by %v\n", messageReceived, processor.username)
+	}
+}
+
+func errorWhileUnmarshaling(processor *ServerProcessor, error error) {
+	log.Printf("Error while unmarshaling: %v\n", error.Error())
+	processor.sendMessage([]byte("Sorry, bad operation...\n"))
+	processor.disconnectClient()
+	
+	if processor.identified {
+		log.Printf("Client '%s' disconnected",
+			processor.username)
+		disconnectedMessage := getDisconnectedMessage(processor.username)
+		sendMessageToAllUsers(processor, disconnectedMessage)
+	} else {
+		log.Printf("Client disconnected")
+	}
+}
+
+func errorWhileReading(processor *ServerProcessor, error error) {
+	log.Println("Error while reading:", error.Error())
+	processor.sendMessage([]byte("Sorry, something went wrong :(\n"))
+	processor.disconnectClient()
+	if processor.identified {
+		log.Printf("Client '%s' disconnected",
+			processor.username)
+		disconnectedMessage := getDisconnectedMessage(processor.username)
+		sendMessageToAllUsers(processor, disconnectedMessage)
+	} else {
+		log.Printf("Client disconnected")
 	}
 }
 
