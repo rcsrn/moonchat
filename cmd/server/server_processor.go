@@ -35,7 +35,7 @@ func (processor *ServerProcessor) readMessages() {
 		numBitsRead, error1 := processor.connection.Read(buffer)
 		
 		if error1 != nil {
-			errorWhileReading(processor, error1)
+			errorWhileReading("reading", processor, error1)
 			break
 		}
 
@@ -43,7 +43,7 @@ func (processor *ServerProcessor) readMessages() {
 		messageReceived, error2 := processor.unmarshalJSON(buffer[:numBitsRead])
 		
 		if error2 != nil {
-			errorWhileUnmarshaling(processor, error2)
+			errorWhileReading("unmarshaling", processor, error2)
 			break
 		}
 
@@ -56,29 +56,16 @@ func (processor *ServerProcessor) readMessages() {
 		}
 		
 		processor.processMessage(messageReceived)
-		fmt.Printf("message received: %v by %v\n", messageReceived, processor.username)
+		log.Printf("message received: %v by %v\n", messageReceived, processor.username)
 	}
 }
 
-func errorWhileUnmarshaling(processor *ServerProcessor, error error) {
-	log.Printf("Error while unmarshaling: %v\n", error.Error())
-	processor.sendMessage([]byte("Sorry, bad operation...\n"))
+func errorWhileReading(errorCase string, processor *ServerProcessor, error error) {
+	log.Printf("Error while %s : %v\n",
+		errorCase,
+		error.Error())
 	processor.disconnectClient()
 	
-	if processor.identified {
-		log.Printf("Client '%s' disconnected",
-			processor.username)
-		disconnectedMessage := getDisconnectedMessage(processor.username)
-		sendMessageToAllUsers(processor, disconnectedMessage)
-	} else {
-		log.Printf("Client disconnected")
-	}
-}
-
-func errorWhileReading(processor *ServerProcessor, error error) {
-	log.Println("Error while reading:", error.Error())
-	processor.sendMessage([]byte("Sorry, something went wrong :(\n"))
-	processor.disconnectClient()
 	if processor.identified {
 		log.Printf("Client '%s' disconnected",
 			processor.username)
@@ -268,10 +255,8 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 	} else {
-		addInvitedUser(roomName, processor.username, processor)
-		succesString := fmt.Sprintf("succes",
-		roomName)
-		succesMessage := getRoomSuccesMessage(succesString, message.NEW_ROOM_TYPE, roomName)
+		addInvitedUserToRoom(roomName, processor.username, processor)
+		succesMessage := getRoomSuccesMessage("succes", message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(succesMessage)
 	}
 }
@@ -299,7 +284,7 @@ func sendInvitation(host string, roomName string, users string) {
 	ArrayOfUsers := toArrayOfUsers(users)
 	for i := 0; i < len(ArrayOfUsers); i++ {
 		userProcessor, _ := getUserProcessor(ArrayOfUsers[i])
-		addInvitedUser(roomName, userProcessor.username, userProcessor)
+		addInvitedUserToRoom(roomName, userProcessor.username, userProcessor)
 		invitationString := fmt.Sprintf("%v te invita al cuarto '%v'",
 		host, roomName)
 		invitationMessage := getRoomInvitationMessage(invitationString, host, roomName)
@@ -360,10 +345,12 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 		processor.sendMessage(warningMessage)
 		return
 	}
-	
-	succesString := fmt.Sprintf("succes",
-	roomName)
-	succesMessage := getRoomSuccesMessage(succesString, message.LEAVE_ROOM_TYPE, roomName)
+
+	if isEmpty := isRoomEmpty(roomName); isEmpty {
+		deleteRoom(roomName)
+	}
+
+	succesMessage := getRoomSuccesMessage("succes", message.LEAVE_ROOM_TYPE, roomName)
 	processor.sendMessage(succesMessage)
 	
 	leftRoomMessage := getLeftRoomMessage(roomName, userName)

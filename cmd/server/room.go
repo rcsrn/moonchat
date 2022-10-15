@@ -72,6 +72,13 @@ func (room *room) removeUser(userName string) {
 	delete(room.counter.users, userName)
 }
 
+func (room *room) isEmpty() (bool) {
+	if length := len(room.counter.users); length == 0 {
+		return true
+	}
+	return false
+}
+
 func (room *room) removeInvitedUser(userName string) {
 	delete(room.counter.invitedUsers, userName)
 }

@@ -140,6 +140,10 @@ func removeOldName(oldName string) {
 	delete(counter.users, oldName)
 }
 
+func deleteRoom(roomName string) {
+	delete(counter.rooms, roomName)
+}
+
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
 	if value := strings.Compare(roomName, ""); value == 0 {
 		return createError("Nombre de cuarto invalido")
@@ -185,7 +189,12 @@ func disconnectUserFromRoom(userName string, roomName string) (error) {
 	return nil
 }
 
-func addInvitedUser(roomName string, userName string, userProcessor *ServerProcessor) {
+func isRoomEmpty(roomName string) (bool) {
+	room, _ := getRoom(roomName)
+	return room.isEmpty()
+}
+
+func addInvitedUserToRoom(roomName string, userName string, userProcessor *ServerProcessor) {
 	room, _ := getRoom(roomName)
 	room.addInvitedUser(userName, userProcessor)
 }
