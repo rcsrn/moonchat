@@ -86,7 +86,7 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 		return userProcessor, nil
 	}
 	
-	errorMessage := fmt.Sprintf("The user '%s' does not exist.",
+	errorMessage := fmt.Sprintf("El usuario no existe '%s' ",
 		userName)
 	return nil, createError(errorMessage)
 }
@@ -95,7 +95,7 @@ func getUserProcessor(userName string)(*ServerProcessor, error){
 func getRoom(roomName string) (*room, error) {
 	room, itExists := counter.rooms[roomName]
 	if !itExists {
-		errorString := fmt.Sprintf("The room '%s' does not exist.",
+		errorString := fmt.Sprintf("El cuarto '%s' no existe",
 			roomName)
 		return nil, errors.New(errorString)
 	}
@@ -142,7 +142,7 @@ func removeOldName(oldName string) {
 
 func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
 	if value := strings.Compare(roomName, ""); value == 0 {
-		return createError("Invalid roomName!")
+		return createError("Nombre de cuarto invalido")
 	}
 	if isRoomNameValid := verifyRoomName(roomName); isRoomNameValid {
 		newRoom := getRoomInstance(roomName)
@@ -151,7 +151,7 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string)
 		addRoom(roomName, newRoom)
 		return nil
 	}
-	errorString := fmt.Sprintf("Roomname '%s' is already used.",
+	errorString := fmt.Sprintf("El cuarto '%s' ya existe",
 		roomName)
 	return createError(errorString)
 }
@@ -160,12 +160,12 @@ func verifyRoomInvitation(host string, roomName string, usersToInvite []string) 
 	room, err := getRoom(roomName)
 	
 	if err != nil {
-		errorString := fmt.Sprintf("The room '%s' does not exist.", roomName)
+		errorString := fmt.Sprintf("El cuarto '%s' no existe", roomName)
 		return errors.New(errorString)
 	}
 	if isMember := room.verifyRoomMember(host); !isMember {
-		errorString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
-		return errors.New(errorString)
+		errorString := fmt.Sprintf("El usuario no esta en el cuarto '%s'", roomName)
+		return createError(errorString)
 	}
 	
 	return nil
@@ -178,7 +178,7 @@ func disconnectUserFromRoom(userName string, roomName string) (error) {
 	}
 	isMember := room.verifyRoomMember(userName)
 	if !isMember {
-		errorString := fmt.Sprintf("The user is not a member of the room '%s'.", roomName)
+		errorString := fmt.Sprintf("El usuario no se ha unido al cuarto '%s'", roomName)
 		return createError(errorString)
 	}
 	room.removeUser(userName)
@@ -196,13 +196,15 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 		return error
 	}
 	if isInvited := room.verifyInvitedUser(userName); !isInvited {
-		errorString := fmt.Sprintf("The user has not been invited to '%s'.",
+		errorString := fmt.Sprintf("El usuario no ha sido invitado al cuarto '%s'",
 			roomName)
 		return createError(errorString)
 	}
 
 	if isMember := room.verifyRoomMember(userName); isMember {
-		return createError("The user is already in the room!")
+		errorString := fmt.Sprintf("El usuario ya se unió al cuarto '%v'",
+		roomName)
+		return createError(errorString)
 	}
 	room.addUser(userName, userProcessor)
 	return nil
@@ -225,13 +227,12 @@ func sendMessageToRoom(transmitter string, roomName string, message []byte) (err
 func getRoomUserList(userName string, roomName string) ([]string, error) {
 	room, err := getRoom(roomName)
 	if err != nil {
-		errorString := fmt.Sprintf("The room '%s' does not exist.",
+		errorString := fmt.Sprintf("El cuarto '%s' no existe",
 			roomName)
 		return nil, createError(errorString)
 	}
 	if isMember := room.verifyRoomMember(userName); !isMember {
-		errorString := fmt.Sprintf("The user '%s' is not a member of the room '%s'",
-			userName,
+		errorString := fmt.Sprintf("El usuario no se ha unido al cuarto '%s'",
 			roomName)
 		return nil , createError(errorString)
 	}

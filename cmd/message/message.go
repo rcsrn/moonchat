@@ -38,6 +38,19 @@ type Message interface {
 	GetJSON() []byte
 }
 
+type IdentifyErrorMessage struct {
+	Type string `json:"type"`
+	Message string `json:"message"`
+}
+
+func (mess IdentifyErrorMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
+
 type StatusErrorMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
@@ -52,14 +65,14 @@ func (mess StatusErrorMessage) GetJSON() []byte {
 	return message
 }
 
-type ErrorMessageRoom struct {
+type RoomErrorMessage struct {
 	Type string `json:"type"`
 	Message string `json:"message"`
 	Operation string `json:operation"`
 	Roomname string `json:roomname`
 }
 
-func (mess ErrorMessageRoom) GetJSON() []byte {
+func (mess RoomErrorMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
