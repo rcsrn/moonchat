@@ -7,7 +7,6 @@ import (
 	"github.com/rcsrn/moonchat/cmd/message"
 	"strings"
 	"log"
-	"sync"
 )
 
 type ServerProcessor struct {
@@ -15,11 +14,6 @@ type ServerProcessor struct {
 	username string
 	userStatus string
 	identified bool
-	rooms []string
-}
-
-type roomCounter struct {
-	sync.RWMutex
 	rooms []string
 }
 
