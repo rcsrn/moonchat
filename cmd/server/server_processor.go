@@ -44,7 +44,7 @@ func (processor *ServerProcessor) readMessages() {
 		if !processor.identified {
 			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
 				processor.sendMessage(getIdentifyErrorMessage())
-				processor.disconnectClient()
+				disconnectClientCase(processor)
 				break
 			}
 		}
@@ -59,7 +59,7 @@ func errorWhileReading(errorCase string, processor *ServerProcessor, error error
 		errorCase,
 		error.Error())
 	
-	processor.disconnectClient()
+	disconnectClientCase(processor)
 	
 	if processor.identified {
 		log.Printf("Client '%s' disconnected",
@@ -79,14 +79,6 @@ func (processor *ServerProcessor) setUserName(name string) {
 
 func (processor *ServerProcessor) setUserStatus(newStatus string) {
 	processor.userStatus = newStatus
-}
-
-//disconnects the client when it sends a message out the protocol.
-func (processor *ServerProcessor) disconnectClient() {
-	processor.connection.Close()
-	if value := strings.Compare(processor.username, ""); value != 0 {
-		delete(counter.users, processor.username)
-	}
 }
 
 //sends messages to the client through its connection.
@@ -171,7 +163,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		roomMessageCase(processor, gottenMessage["roomname"], gottenMessage["message"])
 	case message.LEAVE_ROOM_TYPE:
 		leaveMessageCase(processor, processor.username, gottenMessage["roomname"])
-	default: processor.disconnectClient()
+	default: disconnectClientCase(processor)
 	}
 }
 
@@ -192,7 +184,7 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 	} else {
 		errorMessage := getStatusErrorMessage("estatus invalido", message.STATUS_TYPE)
 		processor.sendMessage(errorMessage)
-		processor.disconnectClient()
+		disconnectClientCase(processor)
 		messageToUsers := getDisconnectedMessage(processor.username)
 		sendMessageToAllUsers(processor, messageToUsers)
 	}
@@ -223,7 +215,8 @@ func userListCase(processor *ServerProcessor) {
 }
 
 func disconnectClientCase(processor *ServerProcessor) {
-	processor.disconnectClient()
+	processor.connection.Close()
+	deleteUserName(processor.username)
 	disconnectedMessage := getDisconnectedMessage(processor.username)
 	sendMessageToAllUsers(processor, disconnectedMessage)
 	leaveAllRooms(processor.username, processor.rooms)
