@@ -136,7 +136,7 @@ func verifyIdentifiedUsers(users []string) (bool, string) {
 	return true, ""
 }
 
-func removeOldName(oldName string) {
+func deleteUserName(oldName string) {
 	delete(counter.users, oldName)
 }
 

@@ -203,7 +203,7 @@ func identifyCase(processor *ServerProcessor, userName string) {
 
 	if isAvailable {
 		if itHasOldName := strings.Compare(processor.username, ""); itHasOldName != 0 {
-			removeOldName(processor.username)
+			deleteUserName(processor.username)
 		}
 		addUser(userName, processor)
 		processor.setUserName(userName)
