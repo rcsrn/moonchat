@@ -346,7 +346,7 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 		return
 	}
 
-	if isEmpty := isRoomEmpty(roomName); isEmpty {
+	if isEmpty := isEmptyRoom(roomName); isEmpty {
 		deleteRoom(roomName)
 	}
 

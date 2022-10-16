@@ -189,7 +189,7 @@ func disconnectUserFromRoom(userName string, roomName string) (error) {
 	return nil
 }
 
-func isRoomEmpty(roomName string) (bool) {
+func isEmptyRoom(roomName string) (bool) {
 	room, _ := getRoom(roomName)
 	return room.isEmpty()
 }
