@@ -58,6 +58,7 @@ func errorWhileReading(errorCase string, processor *ServerProcessor, error error
 	log.Printf("Error while %s : %v\n",
 		errorCase,
 		error.Error())
+	
 	processor.disconnectClient()
 	
 	if processor.identified {
@@ -225,6 +226,7 @@ func disconnectClientCase(processor *ServerProcessor) {
 	processor.disconnectClient()
 	disconnectedMessage := getDisconnectedMessage(processor.username)
 	sendMessageToAllUsers(processor, disconnectedMessage)
+	leaveAllRooms(processor.username, processor.rooms)
 }
 
 func publicMessageCase(processor *ServerProcessor, publicMessageToSend string) {
@@ -346,9 +348,18 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 
 	succesMessage := getRoomSuccesMessage("succes", message.LEAVE_ROOM_TYPE, roomName)
 	processor.sendMessage(succesMessage)
-	
+
 	leftRoomMessage := getLeftRoomMessage(roomName, userName)
 	sendMessageToRoom(userName, roomName, leftRoomMessage)
+	
+}
+
+func leaveAllRooms(userName string, rooms []string) {
+	for i := 0; i < len(rooms); i++ {
+		disconnectUserFromRoom(userName, rooms[i])
+		leftRoomMessage := getLeftRoomMessage(rooms[i], userName)
+		sendMessageToRoom(userName, rooms[i], leftRoomMessage)
+	}
 }
 
 func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
