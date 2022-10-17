@@ -49,6 +49,7 @@ Para la parte de mensajes tendremos una clase Message, en la cual tendremos todo
 La clase Room tendra dos colecciones; una con los nombres de los usuarios dentro de la sala y otra de los usuarios invitados que potencialmente podran unirse a la sala. Solo usuarios invitados podran unirse a la sala y una vez que un usuario se una a la sala sera eliminado de los usuarios invitados para formar parte de los miembros de la sala.
 El comportamiento en Room se limita a solamente agregar y eliminar usuarios, verificar si un usuario en especifico pertenece a la sala, regresar la lista de usuarios en la sala, remover usuarios de la lista de invitados y decirnos si la sala esta vacia o no. 
 
-Por parte del cliente tendremos una clase Client que se encargara de establecer la comunicacion con el servidor y una clase ClientProcessor que sera analoga a ServerProcessor, manejando todo lo relacionado con lectura y escritura de mensajes.
-Las propiedades de 
+Por parte del cliente tendremos una clase Client que se encargara de establecer la comunicacion con el servidor a traves de un enchufe y una clase ClientProcessor que sera analoga a ServerProcessor, manejando todo lo relacionado con lectura y escritura de mensajes.
+
+Para la vista al usuario se solicitara la direccion IP y el puerto por el cual deseamos establecer una conexion con el servidor. Una vez establecida la conexion podra comenzar a escribir mensajes, crear cuartos y todas las funcionalidades que ofrece el servidor.
 	     
