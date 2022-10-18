@@ -150,8 +150,7 @@ func createNewRoom(host string, hostProcessor *ServerProcessor, roomName string)
 	}
 	if isRoomNameValid := verifyRoomName(roomName); isRoomNameValid {
 		newRoom := getRoomInstance(roomName)
-		newRoom.init()
-		newRoom.addUser(host, hostProcessor)
+		newRoom.addUser(host)
 		addRoom(roomName, newRoom)
 		return nil
 	}
@@ -196,7 +195,7 @@ func isEmptyRoom(roomName string) (bool) {
 
 func addInvitedUserToRoom(roomName string, userName string, userProcessor *ServerProcessor) {
 	room, _ := getRoom(roomName)
-	room.addInvitedUser(userName, userProcessor)
+	room.addInvitedUser(userName)
 }
 
 func addUserToRoom(userName string, roomName string, userProcessor *ServerProcessor) (error) {
@@ -215,7 +214,7 @@ func addUserToRoom(userName string, roomName string, userProcessor *ServerProces
 		roomName)
 		return createError(errorString)
 	}
-	room.addUser(userName, userProcessor)
+	room.addUser(userName)
 	return nil
 }
 
@@ -229,7 +228,13 @@ func sendMessageToRoom(transmitter string, roomName string, message []byte) (err
 	if  error != nil {
 		return error
 	}
-	room.sendMessageToRoom(transmitter, message)
+	for userName, _ := range(room.users.elements) {
+		if val := strings.Compare(userName, transmitter); val == 0 {
+			continue
+		}
+		userProcessor, _ := getUserProcessor(userName)
+		userProcessor.sendMessage(message)
+	}
 	return nil
 }
 
