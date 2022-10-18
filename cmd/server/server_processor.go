@@ -10,6 +10,7 @@ import (
 )
 
 type ServerProcessor struct {
+	server *server
 	connection net.Conn
 	username string
 	userStatus string
@@ -17,8 +18,9 @@ type ServerProcessor struct {
 	rooms []string
 }
 
-func getServerProcessorInstance(connection net.Conn) *ServerProcessor {
-	server := ServerProcessor{connection, "", "ACTIVE", false, make([]string, 512)}
+func getServerProcessorInstance(server *server, connection net.Conn) *ServerProcessor {
+	server := ServerProcessor{server,
+		connection, "", "ACTIVE", false, make([]string, 512)}
 	return &server
 }
 

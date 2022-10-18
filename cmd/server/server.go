@@ -10,14 +10,9 @@ import(
 )
 
 type server struct {
-}
-
-//Maps protected for concurrency
-var counter = struct{
-	blocker sync.RWMutex
 	rooms map[string]*room
 	users map[string]*ServerProcessor
-}{users: make(map[string]*ServerProcessor)}
+}
 
 const (
 	SERVER_HOST = "localhost"
@@ -42,17 +37,17 @@ func (server *server) waitForConnections() {
 		}
 		fmt.Println("Client connected from", connection.RemoteAddr())
 		//ACTIVE status is added by default
-		serverProcessor := getServerProcessorInstance(connection)
+		serverProcessor := getServerProcessorInstance(server, connection)
 		go serverProcessor.readMessages()
 	}
 }
 
-func (server *server) initRooms() {
-	counter.rooms = make(map[string]*room)
+func (server *server) initServer() {
+	server.rooms = make(map[string]*room)
 }
 
-func addUser(userName string, processor *ServerProcessor) {
-	counter.users[userName] = processor
+func (server *server) addUser(userName string, processor *ServerProcessor) {
+	server.users[userName] = processor
 	m := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 	sendMessageToAllUsers(processor, m.GetJSON())
 }
