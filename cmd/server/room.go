@@ -48,3 +48,4 @@ func (room *room) removeInvitedUser(userName string) {
 func (room *room) isEmpty() (bool) {
 	return room.users.isEmpty()
 }
+
