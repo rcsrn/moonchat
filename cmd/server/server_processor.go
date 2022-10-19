@@ -194,13 +194,13 @@ func statusCase(processor *ServerProcessor, newStatus string) {
 }
 
 func identifyCase(processor *ServerProcessor, userName string) {
+	if processor.username != "" {
+		return
+	}
+	
 	isAvailable := processor.server.verifyUserName(userName)
 
 	if isAvailable {
-		if itHasOldName := strings.Compare(processor.username, ""); itHasOldName != 0 {
-			processor.server.deleteUserName(processor.username)
-		}
-		
 		processor.server.addUser(userName, processor)
 		newUserMessage := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 		processor.server.sendMessageToAllUsers(processor, newUserMessage.GetJSON())
