@@ -106,8 +106,7 @@ func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, er
 			return nil, error1
 		}
 	}
-	return mapString, nil
-}
+	return mapString, nil}
 
 //auxiliar function to deal the case when it is necessary to work with an array of strings.
 func convertMessageToMapString(message message.InviteToRoomMessage) (map[string]string) {
@@ -118,6 +117,10 @@ func convertMessageToMapString(message message.InviteToRoomMessage) (map[string]
 	return mapString
 }
 
+func (processor *ServerProcessor) addRoom(newRoom string) {
+	index := len(processor.rooms)
+	processor.rooms[index] = newRoom
+}
 
 func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
 	if accepted := verifyStatus(newStatus); !accepted {
@@ -249,6 +252,7 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 		addInvitedUserToRoom(roomName, processor.username, processor)
 		succesMessage := getRoomSuccesMessage("succes", message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(succesMessage)
+		processor.addRoom(roomName)
 	}
 }
 
@@ -297,6 +301,7 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 		roomName)
 	succesMessage := getRoomSuccesMessage(succesString, message.JOIN_ROOM_TYPE, roomName)
 	processor.sendMessage(succesMessage)
+	processor.addRoom(roomName)
 }
 
 func roomUsersCase(processor *ServerProcessor, roomName string) {
