@@ -4,7 +4,6 @@ import(
 	"net"
 	"fmt"
 	"errors"
-	"strings"	
 )
 
 type server struct {
@@ -137,7 +136,7 @@ func (server *server) deleteRoom(roomName string) {
 }
 
 func (server *server) createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
-	if value := strings.Compare(roomName, ""); value == 0 {
+	if roomName == "" {
 		return createError("Nombre de cuarto invalido")
 	}
 	if isRoomNameValid := server.verifyRoomName(roomName); isRoomNameValid {
@@ -228,7 +227,7 @@ func (server *server) sendMessageToRoom(transmitter string, roomName string, mes
 	}
 	
 	for userName, _ := range(room.users.elements) {
-		if val := strings.Compare(userName, transmitter); val == 0 {
+		if userName == transmitter {
 			continue
 		}
 		userProcessor, _ := server.getUserProcessor(userName)

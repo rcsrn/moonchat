@@ -171,7 +171,7 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 }
 
 func statusCase(processor *ServerProcessor, newStatus string) {
-	if value := strings.Compare(processor.userStatus, newStatus); value == 0 {
+	if processor.userStatus == newStatus {
 		warningString := fmt.Sprintf("El estado ya es '%s'", processor.userStatus)
 		warningMessage := getStatusWarningMessage(warningString, message.STATUS_TYPE, processor.userStatus)
 		processor.sendMessage(warningMessage)
