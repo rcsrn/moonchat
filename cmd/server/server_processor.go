@@ -42,19 +42,27 @@ func (processor *ServerProcessor) readMessages() {
 			errorWhileReading("unmarshaling", processor, error2)
 			break
 		}
-		processor.verifier.takeMessage(messageReceived)
+
+		if !processor.isValidMessage(messageReceived) {
+			disconnectClientCase(processor)
+		}
 		
-		if !processor.identified || !processor.verifier.isValidMessage() {
+		if !processor.identified {
 			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
 				processor.sendMessage(getIdentifyErrorMessage())
 				disconnectClientCase(processor)
 				break
 			}
 		}
-		
+
 		processor.processMessage(messageReceived)
 		log.Printf("message received: %v by %v\n", messageReceived, processor.username)
 	}
+}
+
+func (processor *ServerProcessor) isValidMessage(messageReceived map[string]string) (bool) {
+	processor.verifier.setMessage(messageReceived)
+	return processor.verifier.validateMessage()
 }
 
 func errorWhileReading(errorCase string, processor *ServerProcessor, error error) {
