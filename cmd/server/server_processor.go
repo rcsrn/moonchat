@@ -164,8 +164,10 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 		break
 	case message.ROOM_MESSAGE_TYPE:
 		roomMessageCase(processor, gottenMessage["roomname"], gottenMessage["message"])
+		break
 	case message.LEAVE_ROOM_TYPE:
 		leaveMessageCase(processor, processor.username, gottenMessage["roomname"])
+		break
 	default: disconnectClientCase(processor)
 	}
 }
