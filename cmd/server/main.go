@@ -1,6 +1,6 @@
 package main
 
 func main() {
-	chat := chatApplication{}
+	chat := GetChatInstance()
 	chat.Start();
 }

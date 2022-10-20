@@ -1,17 +1,19 @@
 package main
 
-type chatApplication struct {
-	server server
+type application interface {
+	Start() 
 }
 
+type chat struct {
+	server *server
+}
 
-func GetChatApplicationInstance() *chatApplication {
-	chat := chatApplication{}
+func GetChatInstance() *chat {
+	chat := chat{&server{}}
 	return &chat
 }
 
-func (chat *chatApplication) Start() {
-	chat.server = server{}
+func (chat *chat) Start() {
 	chat.server.initServer()
 	chat.server.waitForConnections()
 }
