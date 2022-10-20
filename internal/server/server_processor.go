@@ -131,7 +131,7 @@ func (processor *ServerProcessor) addRoom(newRoom string) {
 }
 
 func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
-	if accepted := processor.server.verifyStatus(newStatus); !accepted {
+	if accepted := processor.server.VerifyStatus(newStatus); !accepted {
 		return false
 	}
 	processor.setUserStatus(newStatus)
@@ -210,7 +210,7 @@ func identifyCase(processor *ServerProcessor, userName string) {
 		return
 	}
 	
-	isAvailable := processor.server.verifyUserName(userName)
+	isAvailable := processor.server.VerifyUserName(userName)
 
 	if isAvailable {
 		processor.server.AddUser(userName, processor)
@@ -260,7 +260,7 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 }
 
 func newRoomCase(processor *ServerProcessor, roomName string) {
-	error := processor.server.createNewRoom(processor.username, processor, roomName)
+	error := processor.server.CreateNewRoom(processor.username, processor, roomName)
 	if error != nil {
 		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
@@ -274,7 +274,7 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 
 func inviteToRoomCase(processor *ServerProcessor, roomName string, users string) {
 	usersToInvite := toArrayOfUsers(users)
-	if theyAllExist, user := processor.server.verifyIdentifiedUsers(usersToInvite); !theyAllExist {
+	if theyAllExist, user := processor.server.VerifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningString := fmt.Sprintf("El usuario '%s' no existe", user)
 		warningMessage := getUsernameWarningMessage(warningString, message.INVITE_TYPE, user)
 		processor.sendMessage(warningMessage)
