@@ -1,30 +1,31 @@
 package server
 
-import(
+import (
 	//"fmt"
 	"testing"
 	"strings"
+	"github.com/rcsrn/moonchat/internal/server"
 )
 
-var testServer server
+var testServer *server.Server
 
 
-func TestInitServer(t *testing.T) {
-	testServer.initServer()
-	if testServer.rooms == nil || testServer.users == nil {
+func TestGetServerInstance(t *testing.T) {
+	testServer = server.GetServerInstance()
+	if testServer.GetRooms() == nil || testServer.GetUsers() == nil {
 		t.Errorf("FAIL: server does not init correctly")
 	}
 }
 
 func cleanUserMap() {
-	for k := range testServer.users {
-		delete(testServer.users, k)
+	for k := range (testServer.GetUsers()) {
+		delete(testServer.GetUsers(), k)
 	}
 }
 
 func cleanRoomMap () {
-	for k := range testServer.rooms {
-		delete(testServer.rooms, k)
+	for k := range testServer.GetRooms() {
+		delete(testServer.GetRooms(), k)
 	}
 }
 
@@ -33,9 +34,9 @@ func fillUserList() {
 	processor2 := ServerProcessor{}
 	processor3 := ServerProcessor{}
 	
-	testServer.users["Juan"] = &processor1
-	testServer.users["Brayan"] = &processor2
-	testServer.users["Pedro"] = &processor3
+	testServer.GetUsers()["Juan"] = &processor1
+	testServer.GetUsers()["Brayan"] = &processor2
+	testServer.GetUsers()["Pedro"] = &processor3
 }
 
 func fillUserArray(users []string) {
@@ -52,14 +53,14 @@ func TestAddUser(t *testing.T) {
 
 func TestGetUserProcessor(t *testing.T) {
 	gottenProcessor, err := testServer.getUserProcessor("Juan")
-	if err != nil || testServer.users["Juan"] != gottenProcessor{
-		t.Errorf("gotten processor is %v and it must be %v", gottenProcessor, testServer.users["Juan"])
+	if err != nil || testServer.GetUsers()["Juan"] != gottenProcessor{
+		t.Errorf("gotten processor is %v and it must be %v", gottenProcessor, testServer.GetUsers()["Juan"])
 	}
 }
 
 func TestGetRoom(t *testing.T) {
 	newRoom := room{}
-	testServer.rooms["Sala1"] = &newRoom
+	testServer.GetRooms()["Sala1"] = &newRoom
 	gottenRoom, err := testServer.getRoom("Sala1")
 	if err != nil || gottenRoom != &newRoom {
 		t.Errorf("The gotten room is wrong")
@@ -88,10 +89,10 @@ func TestAddRoom(t *testing.T) {
 	testServer.addRoom("SALA1", &newRoom1)
 	testServer.addRoom("SALA2", &newRoom2)
 	testServer.addRoom("SALA3", &newRoom3)
-	if length := len(testServer.rooms); length == 0 {
+	if length := len(testServer.GetRooms()); length == 0 {
 		t.Errorf("The room has not been added succesfully")
 	}
-	if testServer.rooms["SALA1"] != &newRoom1 || testServer.rooms["SALA2"] != &newRoom2 || testServer.rooms["SALA3"] != &newRoom3 {
+	if testServer.GetRooms()["SALA1"] != &newRoom1 || testServer.GetRooms()["SALA2"] != &newRoom2 || testServer.GetRooms()["SALA3"] != &newRoom3 {
 		t.Errorf("FAIL: rooms have not been added correctly.")
 	}
 }
@@ -120,7 +121,7 @@ func TestAddUserToRoom(t *testing.T) {
 func TestVerifyUserName(t *testing.T) {
 	cleanUserMap()
 	processor1 := ServerProcessor{}
-	testServer.users["Pedro"] = &processor1
+	testServer.GetUsers()["Pedro"] = &processor1
 	if available := testServer.verifyUserName("Pedro"); available {
 		t.Errorf("The username is not available.")
 	}
@@ -164,9 +165,9 @@ func TestVerifyIdentifiedUsers(t *testing.T) {
 		t.Errorf("This should not happen.")
 	}
 	cleanUserMap()
-	testServer.users["Kimberly"] = nil
-	testServer.users["Jack"] = nil
-	testServer.users["Pepe"] = nil
+	testServer.GetUsers()["Kimberly"] = nil
+	testServer.GetUsers()["Jack"] = nil
+	testServer.GetUsers()["Pepe"] = nil
 	if theyAllExist, user := testServer.verifyIdentifiedUsers(usersToVerify); !theyAllExist || strings.Compare(user, "") != 0 {
 		t.Errorf("This should not happen.")
 	}

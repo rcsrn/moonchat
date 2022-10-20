@@ -4,14 +4,21 @@ import (
 	"testing"
 	"encoding/json"
 	"github.com/rcsrn/moonchat/cmd/message"
+	"github.com/rcsrn/moonchat/internal/server"
 	"strings"
 )
 
-var testProcessor ServerProcessor;
+var testProcessor *server.ServerProcessor 
+
+func TestGetServerProcessorInstance(t *testing.T) {
+	testProcessor = server.GetServerProcessorInstance(nil, nil)
+	if testProcessor == nil {
+		t.Errorf("FAIL: server processor has not been created correctly.")
+	}
+}
 
 
 func TestUnmarshalJSON(t *testing.T) {	
-	testProcessor = ServerProcessor{}
 	var m message.SuccesMessage = message.SuccesMessage{message.INFO_TYPE, "this is test", message.IDENTIFY_TYPE}
 	
 	jsonMessage, err1 := json.Marshal(m)
@@ -20,7 +27,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		t.Errorf("This should not happen, the gotten error is: %v", err1)
 	}
 	
-	gottenMessage, err2 := testProcessor.unmarshalJSON(jsonMessage)
+	gottenMessage, err2 := testProcessor.UnmarshalJSON(jsonMessage)
 
 	if err2 != nil {
 		t.Errorf("the error gotten is: %v", err2)

@@ -5,16 +5,16 @@ type application interface {
 }
 
 type chat struct {
-	server *server
+	server *Server
 }
 
 func GetChatInstance() *chat {
-	chat := chat{&server{}}
+	chat := chat{}
+	chat.server = GetServerInstance()
 	return &chat
 }
 
 func (chat *chat) Start() {
-	chat.server.initServer()
 	chat.server.waitForConnections()
 }
 

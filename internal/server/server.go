@@ -6,8 +6,8 @@ import(
 	"errors"
 )
 
-type server struct {
-	rooms map[string]*room
+type Server struct {
+	rooms map[string]*Room
 	users map[string]*ServerProcessor
 }
 
@@ -17,7 +17,19 @@ const (
 	SERVER_TYPE = "tcp"
 )
 
-func (server *server) waitForConnections() {
+func GetServerInstance() *Server {
+	return &Server{make(map[string]*Room), make (map[string]*ServerProcessor)}
+}
+
+func (server *Server) GetRooms() map[string]*Room {
+	return server.rooms
+}
+
+func (server *Server) GetUsers() map[string]*ServerProcessor {
+	return server.users
+}
+
+func (server *Server) waitForConnections() {
 	fmt.Println("Server is already")
 	connectionListener, err := net.Listen(SERVER_TYPE, SERVER_HOST + ":" + SERVER_PORT)
 	fmt.Println("Waiting for connections...")
@@ -39,21 +51,16 @@ func (server *server) waitForConnections() {
 	}
 }
 
-func (server *server) initServer() {
-	server.rooms = make(map[string]*room)
-	server.users = make (map[string]*ServerProcessor)
-}
-
-func (server *server) addUser(userName string, processor *ServerProcessor) {
+func (server *Server) AddUser(userName string, processor *ServerProcessor) {
 	server.users[userName] = processor
 }
 
-func (server *server) addRoom(roomname string, room *room) {
+func (server *Server) AddRoom(roomname string, room *Room) {
 	server.rooms[roomname] = room
 }
 
 //sends a message just to users that have been added.
-func (server *server) sendMessageToAllUsers(processor *ServerProcessor, message []byte) {
+func (server *Server) sendMessageToAllUsers(processor *ServerProcessor, message []byte) {
 	for _, element := range server.users {
 		if processor == element {
 			continue
@@ -63,7 +70,7 @@ func (server *server) sendMessageToAllUsers(processor *ServerProcessor, message 
 }
 
 //Returns the identified user list
-func (server *server) getUserList() []string {
+func (server *Server) getUserList() []string {
 	var listOfUsers []string
 	for username, _ := range server.users{
 		listOfUsers = append(listOfUsers, username)
@@ -72,7 +79,7 @@ func (server *server) getUserList() []string {
 }
 
 //gets the user received
-func (server *server) getUserProcessor(userName string)(*ServerProcessor, error){
+func (server *Server) GetUserProcessor(userName string)(*ServerProcessor, error){
 	if userProcessor, ok := server.users[userName]; ok {
 		return userProcessor, nil
 	}
@@ -83,7 +90,7 @@ func (server *server) getUserProcessor(userName string)(*ServerProcessor, error)
 }
 
 
-func (server *server) getRoom(roomName string) (*room, error) {
+func (server *Server) getRoom(roomName string) (*Room, error) {
 	room, itExists := server.rooms[roomName]
 	if !itExists {
 		errorString := fmt.Sprintf("El cuarto '%s' no existe",
@@ -93,7 +100,7 @@ func (server *server) getRoom(roomName string) (*room, error) {
 	return room, nil
 }
 
-func (server *server) verifyUserName(userName string) bool {
+func (server *Server) verifyUserName(userName string) bool {
 	if _, ok := server.users[userName]; ok {
 		return false
 	}
@@ -101,7 +108,7 @@ func (server *server) verifyUserName(userName string) bool {
 }
 
 //verifies if the status sent by client is valid.
-func (server *server) verifyStatus(status string) (bool) {
+func (server *Server) verifyStatus(status string) (bool) {
 	switch status {
 	case "AWAY": return true
 	case "BUSY": return true
@@ -111,14 +118,14 @@ func (server *server) verifyStatus(status string) (bool) {
 }
 
 //verifies if the room name is available or not.
-func (server *server) verifyRoomName(roomName string) (bool) {
+func (server *Server) verifyRoomName(roomName string) (bool) {
 	if _, ok := server.rooms[roomName]; ok {
 		return false;
 	}
 	return true;
 }
 
-func (server *server) verifyIdentifiedUsers(users []string) (bool, string) {
+func (server *Server) verifyIdentifiedUsers(users []string) (bool, string) {
 	for i := 0; i < len(users); i++ {
 		if _, itExists := server.users[users[i]]; !itExists {
 			return false, users[i]
@@ -127,22 +134,22 @@ func (server *server) verifyIdentifiedUsers(users []string) (bool, string) {
 	return true, ""
 }
 
-func (server *server) deleteUserName(oldName string) {
+func (server *Server) deleteUserName(oldName string) {
 	delete(server.users, oldName)
 }
 
-func (server *server) deleteRoom(roomName string) {
+func (server *Server) deleteRoom(roomName string) {
 	delete(server.rooms, roomName)
 }
 
-func (server *server) createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
+func (server *Server) createNewRoom(host string, hostProcessor *ServerProcessor, roomName string) (error) {
 	if roomName == "" {
 		return createError("Nombre de cuarto invalido")
 	}
 	if isAvailable := server.verifyRoomName(roomName); isAvailable {
 		newRoom := GetRoomInstance(roomName)
 		newRoom.AddUser(host)
-		server.addRoom(roomName, newRoom)
+		server.AddRoom(roomName, newRoom)
 		return nil
 	}
 	errorString := fmt.Sprintf("El cuarto '%s' ya existe",
@@ -150,7 +157,7 @@ func (server *server) createNewRoom(host string, hostProcessor *ServerProcessor,
 	return createError(errorString)
 }
 
-func (server *server) verifyRoomInvitation(host string, roomName string, usersToInvite []string) (error) {
+func (server *Server) verifyRoomInvitation(host string, roomName string, usersToInvite []string) (error) {
 	room, err := server.getRoom(roomName)
 	
 	if err != nil {
@@ -165,7 +172,7 @@ func (server *server) verifyRoomInvitation(host string, roomName string, usersTo
 	return nil
 }
 
-func (server *server) disconnectUserFromRoom(userName string, roomName string) (error) {
+func (server *Server) disconnectUserFromRoom(userName string, roomName string) (error) {
 	room, error1 := server.getRoom(roomName)
 	if error1 != nil {
 		return error1
@@ -179,17 +186,17 @@ func (server *server) disconnectUserFromRoom(userName string, roomName string) (
 	return nil
 }
 
-func (server *server) isEmptyRoom(roomName string) (bool) {
+func (server *Server) isEmptyRoom(roomName string) (bool) {
 	room, _ := server.getRoom(roomName)
 	return room.IsEmpty()
 }
 
-func (server *server) addInvitedUserToRoom(roomName string, userName string, userProcessor *ServerProcessor) {
+func (server *Server) addInvitedUserToRoom(roomName string, userName string, userProcessor *ServerProcessor) {
 	room, _ := server.getRoom(roomName)
 	room.AddInvitedUser(userName)
 }
 
-func (server *server) addUserToRoom(userName string, roomName string) (error) {
+func (server *Server) addUserToRoom(userName string, roomName string) (error) {
 	room, error := server.getRoom(roomName)
 	if error != nil {
 		return error
@@ -209,12 +216,12 @@ func (server *server) addUserToRoom(userName string, roomName string) (error) {
 	return nil
 }
 
-func (server *server) removeInvitedUserInRoom(userName string, roomName string) {
+func (server *Server) removeInvitedUserInRoom(userName string, roomName string) {
 	room, _ := server.getRoom(roomName)
 	room.RemoveInvitedUser(userName)
 }
 
-func (server *server) sendMessageToRoom(transmitter string, roomName string, message []byte) (error) {
+func (server *Server) sendMessageToRoom(transmitter string, roomName string, message []byte) (error) {
 	room, error:= server.getRoom(roomName)
 	if  error != nil {
 		return error
@@ -226,17 +233,17 @@ func (server *server) sendMessageToRoom(transmitter string, roomName string, mes
 		return createError(errorString)
 	}
 	
-	for userName, _ := range(room.users.elements) {
+	for userName, _ := range(room.GetMembers()) {
 		if userName == transmitter {
 			continue
 		}
-		userProcessor, _ := server.getUserProcessor(userName)
+		userProcessor, _ := server.GetUserProcessor(userName)
 		userProcessor.sendMessage(message)
 	}
 	return nil
 }
 
-func (server *server) getRoomUserList(userName string, roomName string) ([]string, error) {
+func (server *Server) getRoomUserList(userName string, roomName string) ([]string, error) {
 	room, err := server.getRoom(roomName)
 	if err != nil {
 		errorString := fmt.Sprintf("El cuarto '%s' no existe",

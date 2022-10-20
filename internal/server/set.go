@@ -12,6 +12,10 @@ func newSet() *set {
 	return s
 }
 
+func (s *set) getElements() map[string]struct{} {
+	return s.elements
+}
+
 func (s *set) add(value string) {
 	s.elements[value] = exists
 }

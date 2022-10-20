@@ -1,51 +1,63 @@
 package server
 
-type room struct {
+type Room struct {
 	roomName string
-	users *set
+	members *set
 	invitedUsers *set
 }
 
-func GetRoomInstance(roomName string) *room {
-	room := room{roomName, newSet(), newSet()}
+func GetRoomInstance(roomName string) *Room {
+	room := Room{roomName, newSet(), newSet()}
 	return &room
 }
 
-func (room *room) VerifyRoomMember(userName string) (bool) {
-	return room.users.contains(userName)
+func (room *Room) GetMembers() map[string]struct{} {
+	return room.members.getElements()
 }
 
-func (room *room) GetMemberList() ([]string) {
-	memberList := make([]string, len(room.users.elements))
+func (room *Room) GetInvitedUsers() map[string]struct{} {
+	return room.invitedUsers.getElements()
+}
+
+func (room *Room) GetRoomName() string {
+	return room.roomName
+}
+
+func (room *Room) VerifyRoomMember(userName string) (bool) {
+	return room.members.contains(userName)
+}
+
+func (room *Room) GetMemberList() ([]string) {
+	memberList := make([]string, len(room.members.elements))
 	i := 0
-	for userName, _ := range(room.users.elements) {
+	for userName, _ := range(room.members.elements) {
 		memberList[i] = userName
 		i++
 	}
 	return memberList
 }
 
-func (room *room) VerifyInvitedUser(userName string) (bool) {
+func (room *Room) VerifyInvitedUser(userName string) (bool) {
 	return room.invitedUsers.contains(userName) 
 }  
 
-func (room *room) AddUser(userName string) {
-	room.users.add(userName)
+func (room *Room) AddUser(userName string) {
+	room.members.add(userName)
 }
 
-func (room *room) AddInvitedUser(userName string) {
+func (room *Room) AddInvitedUser(userName string) {
 	room.invitedUsers.add(userName)
 }
 
-func (room *room) RemoveUser(userName string) {
-	room.users.remove(userName)
+func (room *Room) RemoveUser(userName string) {
+	room.members.remove(userName)
 }
 
-func (room *room) RemoveInvitedUser(userName string) {
+func (room *Room) RemoveInvitedUser(userName string) {
 	room.invitedUsers.remove(userName)
 }
 
-func (room *room) IsEmpty() (bool) {
-	return room.users.isEmpty()
+func (room *Room) IsEmpty() (bool) {
+	return room.members.isEmpty()
 }
 
