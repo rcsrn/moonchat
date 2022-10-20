@@ -1,43 +1,24 @@
 package main
 
-import (
-	"sync"
-	"strings"
-)
-
 type room struct {
-	counter mapCounter
 	roomName string
-}
-
-type mapCounter struct {
-	blocker sync.RWMutex
-	users map[string]*ServerProcessor
-	invitedUsers map[string]*ServerProcessor
+	users *set
+	invitedUsers *set
 }
 
 func getRoomInstance(roomName string) *room {
-	counter := mapCounter{}
-	var roomInstance room = room{counter, roomName}
-	return &roomInstance
-}
-
-func (room *room) init() {
-	room.counter.users = make(map[string]*ServerProcessor)
-	room.counter.invitedUsers = make(map[string]*ServerProcessor)
+	room := room{roomName, newSet(), newSet()}
+	return &room
 }
 
 func (room *room) verifyRoomMember(userName string) (bool) {
-	if _, itExists := room.counter.users[userName]; itExists {
-		return true
-	}
-	return false
+	return room.users.contains(userName)
 }
 
 func (room *room) getMemberList() ([]string) {
-	memberList := make([]string, len(room.counter.users))
+	memberList := make([]string, len(room.users.elements))
 	i := 0
-	for userName, _ := range(room.counter.users) {
+	for userName, _ := range(room.users.elements) {
 		memberList[i] = userName
 		i++
 	}
@@ -45,40 +26,26 @@ func (room *room) getMemberList() ([]string) {
 }
 
 func (room *room) verifyInvitedUser(userName string) (bool) {
-	if _, userHasBeenInvited := room.counter.invitedUsers[userName]; userHasBeenInvited {
-		return true
-	}
-	return false
+	return room.invitedUsers.contains(userName) 
+}  
+
+func (room *room) addUser(userName string) {
+	room.users.add(userName)
 }
 
-func (room *room) addUser(userName string, userProcessor *ServerProcessor) {
-	room.counter.users[userName] = userProcessor
-}
-
-func (room *room) addInvitedUser(userName string, userProcessor *ServerProcessor) {
-	room.counter.invitedUsers[userName] = userProcessor
-}
-
-func (room *room) sendMessageToRoom(transmitter string, message []byte) {
-	for userName, userProcessor := range (room.counter.users) {
-		if val := strings.Compare(userName, transmitter); val == 0 {
-			continue
-		}
-		userProcessor.sendMessage(message)
-	}
+func (room *room) addInvitedUser(userName string) {
+	room.invitedUsers.add(userName)
 }
 
 func (room *room) removeUser(userName string) {
-	delete(room.counter.users, userName)
-}
-
-func (room *room) isEmpty() (bool) {
-	if length := len(room.counter.users); length == 0 {
-		return true
-	}
-	return false
+	room.users.remove(userName)
 }
 
 func (room *room) removeInvitedUser(userName string) {
-	delete(room.counter.invitedUsers, userName)
+	room.invitedUsers.remove(userName)
 }
+
+func (room *room) isEmpty() (bool) {
+	return room.users.isEmpty()
+}
+

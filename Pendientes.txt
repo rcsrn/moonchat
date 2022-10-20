@@ -1,0 +1,8 @@
+Terminar la refactorizacion de los metodos
+Corregir que no se puede cambiar el nombre de usuario.
+Modificar las pruebas unitarais.
+Añadir la documentacion.
+Corregir el caso cuando un mensaje esta incompleto, por ejemplo que la llave IDENTIFY esta bien pero no tiene ninguna llave username. SI la primera llave esta incompleta no hay ningun problema pues no caza con nada, si alguna de las otras llaves esta incompleta debe desconectar al cliente.
+Terminar el diseño.
+Comezar el Cliente.
+Añadir una interfaz grafica.
