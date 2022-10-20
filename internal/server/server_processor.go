@@ -19,7 +19,7 @@ type ServerProcessor struct {
 	verifier *messageVerifier
 }
 
-func getServerProcessorInstance(server *server, connection net.Conn) *ServerProcessor {
+func GetServerProcessorInstance(server *server, connection net.Conn) *ServerProcessor {
 	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024), &messageVerifier{}}
 	return &serverProcessor
 }
