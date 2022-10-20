@@ -139,7 +139,7 @@ func (server *server) createNewRoom(host string, hostProcessor *ServerProcessor,
 	if roomName == "" {
 		return createError("Nombre de cuarto invalido")
 	}
-	if isRoomNameValid := server.verifyRoomName(roomName); isRoomNameValid {
+	if isAvailable := server.verifyRoomName(roomName); isAvailable {
 		newRoom := getRoomInstance(roomName)
 		newRoom.addUser(host)
 		server.addRoom(roomName, newRoom)
@@ -189,7 +189,7 @@ func (server *server) addInvitedUserToRoom(roomName string, userName string, use
 	room.addInvitedUser(userName)
 }
 
-func (server *server) addUserToRoom(userName string, roomName string, userProcessor *ServerProcessor) (error) {
+func (server *server) addUserToRoom(userName string, roomName string) (error) {
 	room, error := server.getRoom(roomName)
 	if error != nil {
 		return error

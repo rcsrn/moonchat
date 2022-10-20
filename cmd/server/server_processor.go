@@ -292,7 +292,7 @@ func (processor *ServerProcessor) sendInvitation(host string, roomName string, u
 }
 
 func joinRoomCase(processor *ServerProcessor, roomName string) {
-	error := processor.server.addUserToRoom(processor.username, roomName, processor)
+	error := processor.server.addUserToRoom(processor.username, roomName)
 	if error != nil {
 		processor.sendMessage(getRoomWarningMessage(error.Error(), message.JOIN_ROOM_TYPE, roomName))
 		return
