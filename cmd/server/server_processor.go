@@ -16,10 +16,11 @@ type ServerProcessor struct {
 	userStatus string
 	identified bool
 	rooms []string
+	verifier *messageVerifier
 }
 
 func getServerProcessorInstance(server *server, connection net.Conn) *ServerProcessor {
-	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024)}
+	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024), &messageVerifier{}}
 	return &serverProcessor
 }
 
@@ -41,8 +42,9 @@ func (processor *ServerProcessor) readMessages() {
 			errorWhileReading("unmarshaling", processor, error2)
 			break
 		}
-
-		if !processor.identified {
+		processor.verifier.takeMessage(messageReceived)
+		
+		if !processor.identified || !processor.verifier.isValidMessage() {
 			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
 				processor.sendMessage(getIdentifyErrorMessage())
 				disconnectClientCase(processor)

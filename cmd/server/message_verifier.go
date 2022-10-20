@@ -6,6 +6,10 @@ type messageVerifier struct {
 	message map[string]string
 }
 
+func (verifier *messageVerifier) takeMessage(message map[string]string) {
+	verifier.message = message
+}
+
 func (verifier *messageVerifier) isValidMessage() (bool) {
 	switch verifier.message["type"] {
 	case message.IDENTIFY_TYPE:
