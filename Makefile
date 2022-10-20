@@ -1,5 +1,5 @@
-buildServer: ./cmd/server
-	go build ./cmd/server/*.go
+buildServer: ./cmd/chat
+	go build ./cmd/chat/*.go
 
 startServer:
-	./chat_application
+	./chat
