@@ -3,3 +3,9 @@ buildServer: ./cmd/chat
 
 startServer:
 	./chat
+
+buildClient : ./cmd/client
+	go build ./cmd/client/*.go
+
+startClient:
+	./main
