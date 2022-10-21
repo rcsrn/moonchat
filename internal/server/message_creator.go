@@ -1,0 +1,91 @@
+package server
+
+import "github.com/rcsrn/moonchat/internal/message"
+
+
+
+func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
+	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, succes, operation, roomName}
+	return succesMessage.GetJSON()
+}
+
+func getSuccesMessage(succes string, operation string) ([]byte) {
+	succesMessage := message.SuccesMessage{message.INFO_TYPE, succes, operation}
+	return succesMessage.GetJSON()
+}
+
+func getUsernameWarningMessage(warning string, operation string, userName string) ([]byte) {
+	warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warning, operation, userName}
+	return warningMessage.GetJSON()
+}
+
+func getStatusWarningMessage(warning string, operation string, status string) ([]byte) {
+	warningMessage := message.StatusWarningMessage{message.WARNING_TYPE, warning, operation, status}
+	return warningMessage.GetJSON()
+}
+
+func getRoomWarningMessage(warning string, operation string, roomName string) ([]byte) {
+	warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, warning, operation, roomName}
+	return warningMessage.GetJSON()
+}
+
+func getDisconnectedMessage(userName string) ([]byte) {
+	disconnectedMessage := message.DisconnectedMessage{message.DISCONNECTED_TYPE, userName}
+	return disconnectedMessage.GetJSON()
+}
+
+func getUserListMessage(typeOfList string, userList []string) ([]byte) {
+	switch typeOfList {
+	case message.ROOM_USER_LIST_TYPE:
+		userListMessage := message.UserList{message.ROOM_USER_LIST_TYPE, userList}
+		return userListMessage.GetJSON()
+	default:
+		userListMessage := message.UserList{message.USER_LIST_TYPE, userList}
+		return userListMessage.GetJSON()
+	}
+}
+
+func getPrivateMessage(private string, transmitter string) ([]byte) {
+	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, private}
+	return privateMessage.GetJSON()
+}
+
+func getPublicMessage(userName string, public string) ([]byte) {
+	publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, userName, public}
+	return publicMessage.GetJSON()
+}
+
+func getNewStatusMessage(userName string, status string) ([]byte) {
+	newStatusMessage := message.NewStatusMessage{message.NEW_STATUS_TYPE, userName, status}
+	return newStatusMessage.GetJSON()
+}
+
+func getStatusErrorMessage(error string, operation string) ([]byte) {
+	errorMessage := message.StatusErrorMessage{message.ERROR_TYPE, error, operation}
+	return errorMessage.GetJSON()
+}
+
+func getRoomInvitationMessage(invitation string, host string, roomName string) ([]byte) {
+	roomInvitationMessage := message.RoomInvitationMessage{message.INVITATION_TYPE, invitation, host, roomName}
+	return roomInvitationMessage.GetJSON()
+}
+
+func getJoinedMessage(roomName string, userName string) ([]byte) {
+	joinedMessage := message.JoinedRoomMessage{message.JOINED_ROOM_TYPE, roomName, userName}
+	return joinedMessage.GetJSON()
+}
+
+func getRoomMessage(roomName string, userName string, messageToSend string) ([]byte) {
+	roomMessage := message.RoomMessage{message.ROOM_MESSAGE_FROM_TYPE, roomName, userName, messageToSend}
+	return roomMessage.GetJSON()
+}
+
+func getLeftRoomMessage(roomName string, userName string) ([]byte) {
+	leftRoomMessage := message.LeftRoomMessage{message.LEFT_ROOM_TYPE, roomName, userName}
+	return leftRoomMessage.GetJSON()
+}
+
+func getIdentifyErrorMessage() ([]byte) {
+	errorMessage := message.IdentifyErrorMessage{message.ERROR_TYPE, "User not identified"}
+	return errorMessage.GetJSON()
+}
