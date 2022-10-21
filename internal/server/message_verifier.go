@@ -16,34 +16,34 @@ func (verifier *messageVerifier) setMessage(message map[string]string) {
 func (verifier *messageVerifier) validateMessage() (bool) {
 	switch verifier.message["type"] {
 	case message.IDENTIFY_TYPE:
-		return verifyIdentifyMessage(verifier.message)
+		return VerifyIdentifyMessage(verifier.message)
 	case message.STATUS_TYPE:
-		return verifyStatusMessage(verifier.message)
+		return VerifyStatusMessage(verifier.message)
 	case message.USERS_TYPE:
-		return verifyUserMessage(verifier.message)
+		return VerifyUserMessage(verifier.message)
 	case message.DISCONNECT_TYPE:
-		return verifyDisconnectMessage(verifier.message)
+		return VerifyDisconnectMessage(verifier.message)
 	case message.PUBLIC_TYPE:
-		return verifyPublicMessage(verifier.message)
+		return VerifyPublicMessage(verifier.message)
 	case message.MESSAGE_TYPE:
-		return verifyPrivateMessage(verifier.message)
+		return VerifyPrivateMessage(verifier.message)
 	case message.NEW_ROOM_TYPE:
-		return verifyNewRoomMessage(verifier.message)
+		return VerifyNewRoomMessage(verifier.message)
 	case message.INVITE_TYPE:
-		return verifyInviteMessage(verifier.message)
+		return VerifyInviteMessage(verifier.message)
 	case message.JOIN_ROOM_TYPE:
-		return verifyJoinMessage(verifier.message)
+		return VerifyJoinMessage(verifier.message)
 	case message.ROOM_USERS_TYPE:
-		return verifyRoomUserMessage(verifier.message)
+		return VerifyRoomUserMessage(verifier.message)
 	case message.ROOM_MESSAGE_TYPE:
-		return verifyRoomMessage(verifier.message)
+		return VerifyRoomMessage(verifier.message)
 	case message.LEAVE_ROOM_TYPE:
-		return verifyLeaveMessage(verifier.message)
+		return VerifyLeaveMessage(verifier.message)
 	default: return false	
 	}
 } 
 
-func verifyIdentifyMessage(identifyMessage map[string]string) (bool) {
+func VerifyIdentifyMessage(identifyMessage map[string]string) (bool) {
 	if len(identifyMessage) != 2 {
 		return false
 	}
@@ -56,7 +56,7 @@ func verifyIdentifyMessage(identifyMessage map[string]string) (bool) {
 	return true
 }
 
-func verifyStatusMessage(statusMessage map[string]string) (bool) {
+func VerifyStatusMessage(statusMessage map[string]string) (bool) {
 	if len(statusMessage) != 2 {
 		return false
 	}
@@ -69,7 +69,7 @@ func verifyStatusMessage(statusMessage map[string]string) (bool) {
 	return true
 }
 
-func verifyUserMessage(userMessage map[string]string) (bool) {
+func VerifyUserMessage(userMessage map[string]string) (bool) {
 	if len(userMessage) != 1 {
 		return false
 	}
@@ -80,7 +80,7 @@ func verifyUserMessage(userMessage map[string]string) (bool) {
 
 }
 
-func verifyDisconnectMessage(disconnectMessage map[string]string) (bool) {
+func VerifyDisconnectMessage(disconnectMessage map[string]string) (bool) {
 	if len(disconnectMessage) != 1 {
 		return false
 	}
@@ -91,7 +91,7 @@ func verifyDisconnectMessage(disconnectMessage map[string]string) (bool) {
 
 }
 
-func  verifyPublicMessage(publicMessage map[string]string) (bool) {
+func  VerifyPublicMessage(publicMessage map[string]string) (bool) {
 	if len(publicMessage) != 2 {
 		return false
 	}
@@ -105,7 +105,7 @@ func  verifyPublicMessage(publicMessage map[string]string) (bool) {
 
 }
 
-func verifyPrivateMessage(privateMessage map[string]string) (bool) {
+func VerifyPrivateMessage(privateMessage map[string]string) (bool) {
 	if len(privateMessage) != 3 {
 		return false
 	}
@@ -121,7 +121,7 @@ func verifyPrivateMessage(privateMessage map[string]string) (bool) {
 	return true
 }
 
-func verifyNewRoomMessage(newRoomMessage map[string]string) (bool) {
+func VerifyNewRoomMessage(newRoomMessage map[string]string) (bool) {
 	if len(newRoomMessage) != 2 {
 		return false
 	}
@@ -135,7 +135,7 @@ func verifyNewRoomMessage(newRoomMessage map[string]string) (bool) {
 
 }
 
-func verifyInviteMessage(inviteMessage map[string]string) (bool) {
+func VerifyInviteMessage(inviteMessage map[string]string) (bool) {
 	if len(inviteMessage) != 3 {
 		return false
 	}
@@ -152,7 +152,7 @@ func verifyInviteMessage(inviteMessage map[string]string) (bool) {
 
 }
 
-func verifyJoinMessage(joinMessage map[string]string) (bool) {
+func VerifyJoinMessage(joinMessage map[string]string) (bool) {
 	if len(joinMessage) != 2 {
 		return false
 	}
@@ -166,7 +166,7 @@ func verifyJoinMessage(joinMessage map[string]string) (bool) {
 
 }
 
-func verifyRoomUserMessage(roomUserMessage map[string]string) (bool) {
+func VerifyRoomUserMessage(roomUserMessage map[string]string) (bool) {
 	if len(roomUserMessage) != 2 {
 		return false
 	}
@@ -180,7 +180,7 @@ func verifyRoomUserMessage(roomUserMessage map[string]string) (bool) {
 
 }
 
-func verifyRoomMessage(roomMessage map[string]string) (bool) {
+func VerifyRoomMessage(roomMessage map[string]string) (bool) {
 	if len(roomMessage) != 3 {
 		return false
 	}
@@ -197,7 +197,7 @@ func verifyRoomMessage(roomMessage map[string]string) (bool) {
 
 }
 
-func verifyLeaveMessage(leaveMessage map[string]string) (bool) {
+func VerifyLeaveMessage(leaveMessage map[string]string) (bool) {
 	if len(leaveMessage) != 2 {
 		return false
 	}
