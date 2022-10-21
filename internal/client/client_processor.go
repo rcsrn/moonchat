@@ -13,3 +13,7 @@ type ClientProcessor struct {
 func getClientInstance(connection net.Conn) *ClientProcessor {
 	return &ClientProcessor{connection, false, ""}
 }
+
+func (processor *ClientProcessor) setConnection(connection net.Conn) {
+	processor.connection = connection
+}

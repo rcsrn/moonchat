@@ -32,7 +32,7 @@ func main () {
 	}
 	printer.PrintInstructions()
 	listener = view.GetConsoleListenerInstance()
-
+	
 
 	for {
 	message := listener.ListenFromConsole()

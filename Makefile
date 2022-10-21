@@ -7,5 +7,3 @@ startServer:
 buildClient : ./cmd/client
 	go build ./cmd/client/*.go
 
-startClient:
-	./client_controller
