@@ -8,4 +8,4 @@ buildClient : ./cmd/client
 	go build ./cmd/client/*.go
 
 startClient:
-	./main
+	./client_controller
