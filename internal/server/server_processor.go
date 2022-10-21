@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net"
@@ -10,7 +10,7 @@ import (
 )
 
 type ServerProcessor struct {
-	server *server
+	server *Server
 	connection net.Conn
 	username string
 	userStatus string
@@ -19,7 +19,7 @@ type ServerProcessor struct {
 	verifier *messageVerifier
 }
 
-func getServerProcessorInstance(server *server, connection net.Conn) *ServerProcessor {
+func GetServerProcessorInstance(server *Server, connection net.Conn) *ServerProcessor {
 	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024), &messageVerifier{}}
 	return &serverProcessor
 }
@@ -36,7 +36,7 @@ func (processor *ServerProcessor) readMessages() {
 		}
 
 		//It is necessary to specify the exact number of bits read by Read() method to unmarshal.
-		messageReceived, error2 := processor.unmarshalJSON(buffer[:numBitsRead])
+		messageReceived, error2 := processor.UnmarshalJSON(buffer[:numBitsRead])
 		
 		if error2 != nil {
 			errorWhileReading("unmarshaling", processor, error2)
@@ -100,7 +100,7 @@ func (processor *ServerProcessor) sendMessage(message []byte) {
 }
 
 //unmarshals messages that need to be processed by serverProcessor
-func (processor *ServerProcessor) unmarshalJSON(j []byte) (map[string]string, error) {
+func (processor *ServerProcessor) UnmarshalJSON(j []byte) (map[string]string, error) {
 	var mapString map[string]string 
 	error1 := json.Unmarshal(j, &mapString)
 	if error1 != nil {
@@ -131,7 +131,7 @@ func (processor *ServerProcessor) addRoom(newRoom string) {
 }
 
 func (processor *ServerProcessor) changeStatus(newStatus string) (bool) {
-	if accepted := processor.server.verifyStatus(newStatus); !accepted {
+	if accepted := processor.server.VerifyStatus(newStatus); !accepted {
 		return false
 	}
 	processor.setUserStatus(newStatus)
@@ -210,10 +210,10 @@ func identifyCase(processor *ServerProcessor, userName string) {
 		return
 	}
 	
-	isAvailable := processor.server.verifyUserName(userName)
+	isAvailable := processor.server.VerifyUserName(userName)
 
 	if isAvailable {
-		processor.server.addUser(userName, processor)
+		processor.server.AddUser(userName, processor)
 		newUserMessage := message.NewUserMessage{message.NEW_USER_TYPE, userName}
 		processor.server.sendMessageToAllUsers(processor, newUserMessage.GetJSON())
 		
@@ -249,7 +249,7 @@ func publicMessageCase(processor *ServerProcessor, publicMessageToSend string) {
 }
 
 func privateMessageCase(processor *ServerProcessor, receptor string, privateMessageToSend string) {
-	receptorProcessor, error := processor.server.getUserProcessor(receptor)
+	receptorProcessor, error := processor.server.GetUserProcessor(receptor)
 	if error != nil {
 		warningMessage := getUsernameWarningMessage(error.Error(), message.MESSAGE_TYPE, receptor)
 		processor.sendMessage(warningMessage)
@@ -260,7 +260,7 @@ func privateMessageCase(processor *ServerProcessor, receptor string, privateMess
 }
 
 func newRoomCase(processor *ServerProcessor, roomName string) {
-	error := processor.server.createNewRoom(processor.username, processor, roomName)
+	error := processor.server.CreateNewRoom(processor.username, processor, roomName)
 	if error != nil {
 		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
@@ -274,7 +274,7 @@ func newRoomCase(processor *ServerProcessor, roomName string) {
 
 func inviteToRoomCase(processor *ServerProcessor, roomName string, users string) {
 	usersToInvite := toArrayOfUsers(users)
-	if theyAllExist, user := processor.server.verifyIdentifiedUsers(usersToInvite); !theyAllExist {
+	if theyAllExist, user := processor.server.VerifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningString := fmt.Sprintf("El usuario '%s' no existe", user)
 		warningMessage := getUsernameWarningMessage(warningString, message.INVITE_TYPE, user)
 		processor.sendMessage(warningMessage)
@@ -294,7 +294,7 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 func (processor *ServerProcessor) sendInvitation(host string, roomName string, users string) {
 	ArrayOfUsers := toArrayOfUsers(users)
 	for i := 0; i < len(ArrayOfUsers); i++ {
-		userProcessor, _ := processor.server.getUserProcessor(ArrayOfUsers[i])
+		userProcessor, _ := processor.server.GetUserProcessor(ArrayOfUsers[i])
 		processor.server.addInvitedUserToRoom(roomName, userProcessor.username, userProcessor)
 		invitationString := fmt.Sprintf("%v te invita al cuarto '%v'",
 		host, roomName)

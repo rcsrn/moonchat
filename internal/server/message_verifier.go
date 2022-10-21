@@ -1,4 +1,4 @@
-package main
+package server
 
 import "github.com/rcsrn/moonchat/cmd/message"
 

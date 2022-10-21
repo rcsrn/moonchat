@@ -1,4 +1,4 @@
-package main
+package server
 
 var exists = struct{}{}
 
@@ -10,6 +10,10 @@ func newSet() *set {
 	s := &set{}
 	s.elements = make(map[string]struct{})
 	return s
+}
+
+func (s *set) getElements() map[string]struct{} {
+	return s.elements
 }
 
 func (s *set) add(value string) {

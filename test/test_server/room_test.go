@@ -1,57 +1,58 @@
-package main
+package server
 
 import (
 	"testing"
 	"strings"
+	"github.com/rcsrn/moonchat/internal/server"
 )
 
-var testRoom *room 
+var testRoom *server.Room
 
 func TestGetRoomInstance(t *testing.T) {
-	testRoom = getRoomInstance("SalaX")
+	testRoom = server.GetRoomInstance("SalaX")
 	if testRoom == nil {
 		t.Errorf("FAIL: nil has been gotten.")
 	}
-	if testRoom.roomName != "SalaX" {
+	if testRoom.GetRoomName() != "SalaX" {
 		t.Errorf("FAIL: the names are different.")
 	}
 }
 
 func TestAddRoomUser(t *testing.T) {
-	if length := len(testRoom.users.elements); length != 0 {
+	if length := len(testRoom.GetMembers()); length != 0 {
 		t.Errorf("FAIL: there are no users in room.")
 	}	
 	
-	testRoom.addUser("Person1")
-	testRoom.addUser("Person2")
-	testRoom.addUser("Person3")
+	testRoom.AddUser("Person1")
+	testRoom.AddUser("Person2")
+	testRoom.AddUser("Person3")
 
-	if !testRoom.users.contains("Person1") {
+	if !testRoom.VerifyRoomMember("Person1") {
 		t.Errorf("FAIL: the user has not been added correctly.")
 	}
-	if !testRoom.users.contains("Person2") {
+	if !testRoom.VerifyRoomMember("Person2") {
 		t.Errorf("FAIL: the user has not been added correctly.")
 	}
-	if !testRoom.users.contains("Person3") {
+	if !testRoom.VerifyRoomMember("Person3") {
 		t.Errorf("FAIL: the user has not been added correctly.")
 	}
 	
-	if length := len(testRoom.users.elements); length != 3 {
+	if length := len(testRoom.GetMembers()); length != 3 {
 		t.Errorf("FAIL: there are three users in the room.")
 	}
 }
 
 func TestVerifyRoomMember(t *testing.T) {
-	if itExists := testRoom.verifyRoomMember(""); itExists {
+	if itExists := testRoom.VerifyRoomMember(""); itExists {
 		t.Errorf("FAIL: this user does not exist in the room.")
 	}
-	if itExists := testRoom.verifyRoomMember("Person1"); !itExists {
+	if itExists := testRoom.VerifyRoomMember("Person1"); !itExists {
 		t.Errorf("FAIL: this user does not exist in the room.")
 	}
-	if itExists := testRoom.verifyRoomMember("Person2"); !itExists {
+	if itExists := testRoom.VerifyRoomMember("Person2"); !itExists {
 		t.Errorf("FAIL: this user does not exist in the room.")
 	}
-	if itExists := testRoom.verifyRoomMember("Person3"); !itExists {
+	if itExists := testRoom.VerifyRoomMember("Person3"); !itExists {
 		t.Errorf("FAIL: this user does not exist in the room.")
 	}
 }
@@ -62,7 +63,7 @@ func TestGetMemberList(t *testing.T) {
 	concurrentUserList[0] = "Person1"
 	concurrentUserList[1] = "Person2"
 	concurrentUserList[2] = "Person3"
-	gottenUserList := testRoom.getMemberList()
+	gottenUserList := testRoom.GetMemberList()
 	isRight := equalSlices(concurrentUserList, gottenUserList)
 	if !isRight {
 		t.Errorf("FAIL: the gotten list is %v and it should be %v .",
