@@ -35,8 +35,8 @@ func main () {
 	
 
 	for {		
-	message := listener.ListenFromConsole()
-	client.ProcessMessage(message)
+		message := listener.ListenFromConsole()
+		client.ProcessMessage(message)
 	}
 }
 

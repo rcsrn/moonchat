@@ -32,17 +32,14 @@ func main () {
 	}
 	printer.PrintInstructions()
 	listener = view.GetConsoleListenerInstance()
+	
 
-
-	for {
+	for {		
 	message := listener.ListenFromConsole()
 	client.ProcessMessage(message)
-
 	}
 }
-
 
 func getHostDirection(arguments []string) string {
 	return arguments[1] + ":" + arguments[2]
 }
-
