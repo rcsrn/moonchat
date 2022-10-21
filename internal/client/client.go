@@ -1,9 +1,7 @@
 package client
 
 import (
-	//	"errors"
 	"net"
-	"fmt"
 )
 
 type Client struct {
@@ -18,7 +16,6 @@ func GetClientInstance() *Client {
 func (client *Client) Connect(host string) error {
 	connection, error := net.Dial("tcp", host)
         if error != nil {
-		fmt.Println(error.Error())
                 return error
         }
 	client.processor.setConnection(connection)
@@ -26,7 +23,7 @@ func (client *Client) Connect(host string) error {
 }
 
 func (client *Client) ProcessMessage(message []string) {
-
+	client.processor.ProcessMessage(message)
 }
 
 func (client *Client) IsIdentified() bool {
