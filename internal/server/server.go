@@ -84,7 +84,7 @@ func (server *Server) GetUserProcessor(userName string)(*ServerProcessor, error)
 		return userProcessor, nil
 	}
 	
-	errorMessage := fmt.Sprintf("El usuario no existe '%s' ",
+	errorMessage := fmt.Sprintf("El usuario '%s' no existe",
 		userName)
 	return nil, createError(errorMessage)
 }

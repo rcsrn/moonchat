@@ -154,19 +154,6 @@ func (mess RoomSuccesMessage) GetJSON() []byte {
 	return message
 }
 
-type IdentifyMessage struct {
-	Type string `json:"type"`
-	Username string `json"username"`
-}
-
-func (mess IdentifyMessage) GetJSON() []byte {
-	message, err := json.Marshal(mess)
-	if err != nil {
-		fmt.Println("This should not happen")
-	}
-	return message
-}
-
 type NewUserMessage struct {
 	Type string `json:"type"`
 	Username string `json:"username"`
@@ -250,6 +237,19 @@ func (mess LeftRoomMessage) GetJSON() []byte {
 
 
 //Client Messages:
+
+type IdentifyMessage struct {
+	Type string `json:"type"`
+	Username string `json:"username"`
+}
+
+func (mess IdentifyMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}
 
 type InviteToRoomMessage struct {
 	Type string `json:"type"`

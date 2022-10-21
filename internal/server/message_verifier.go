@@ -1,6 +1,9 @@
 package server
 
-import "github.com/rcsrn/moonchat/internal/message"
+import (
+	"github.com/rcsrn/moonchat/internal/message"
+	//"fmt"
+)
 
 type messageVerifier struct {
 	message map[string]string
@@ -47,7 +50,7 @@ func verifyIdentifyMessage(identifyMessage map[string]string) (bool) {
 	if _, itExists := identifyMessage["type"]; !itExists {
 		return false
 	}
-	if _, itExists := identifyMessage["message"]; !itExists {
+	if _, itExists := identifyMessage["username"]; !itExists {
 		return false
 	}
 	return true
