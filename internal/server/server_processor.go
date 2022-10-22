@@ -4,7 +4,7 @@ import (
 	"net"
 	"fmt"
 	"encoding/json"
-	"github.com/rcsrn/moonchat/cmd/message"
+	"github.com/rcsrn/moonchat/internal/message"
 	"strings"
 	"log"
 )
@@ -17,10 +17,11 @@ type ServerProcessor struct {
 	identified bool
 	rooms []string
 	verifier *messageVerifier
+	creator *messageCreator
 }
 
 func GetServerProcessorInstance(server *Server, connection net.Conn) *ServerProcessor {
-	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024), &messageVerifier{}}
+	serverProcessor := ServerProcessor{server, connection, "", "ACTIVE", false, make([]string, 1024), &messageVerifier{}, &messageCreator{}}
 	return &serverProcessor
 }
 
@@ -49,7 +50,8 @@ func (processor *ServerProcessor) readMessages() {
 		
 		if !processor.identified {
 			if value := strings.Compare(messageReceived["type"], message.IDENTIFY_TYPE); value != 0 {
-				processor.sendMessage(getIdentifyErrorMessage())
+				identifyErrorMessage := processor.creator.getIdentifyErrorMessage()
+				processor.sendMessage(identifyErrorMessage)
 				disconnectClientCase(processor)
 				break
 			}
@@ -75,7 +77,7 @@ func errorWhileReading(errorCase string, processor *ServerProcessor, error error
 	if processor.identified {
 		log.Printf("Client '%s' disconnected",
 			processor.username)
-		disconnectedMessage := getDisconnectedMessage(processor.username)
+		disconnectedMessage := processor.creator.getDisconnectedMessage(processor.username)
 		processor.server.sendMessageToAllUsers(processor, disconnectedMessage)
 	} else {
 		log.Printf("Client disconnected")
@@ -185,22 +187,22 @@ func (processor *ServerProcessor) processMessage(gottenMessage map[string]string
 func statusCase(processor *ServerProcessor, newStatus string) {
 	if processor.userStatus == newStatus {
 		warningString := fmt.Sprintf("El estado ya es '%s'", processor.userStatus)
-		warningMessage := getStatusWarningMessage(warningString, message.STATUS_TYPE, processor.userStatus)
+		warningMessage := processor.creator.getStatusWarningMessage(warningString, message.STATUS_TYPE, processor.userStatus)
 		processor.sendMessage(warningMessage)
 		return
 	}
 	
 	changedStatus := processor.changeStatus(newStatus)
 	if changedStatus {
-		succesMessage := getSuccesMessage("succes", message.STATUS_TYPE)
+		succesMessage := processor.creator.getSuccesMessage("succes", message.STATUS_TYPE)
 		processor.sendMessage(succesMessage)
-		messageToUsers := getNewStatusMessage(processor.username, newStatus)
+		messageToUsers := processor.creator.getNewStatusMessage(processor.username, newStatus)
 		processor.server.sendMessageToAllUsers(processor, messageToUsers)
 	} else {
-		errorMessage := getStatusErrorMessage("estatus invalido", message.STATUS_TYPE)
+		errorMessage := processor.creator.getStatusErrorMessage("estatus invalido", message.STATUS_TYPE)
 		processor.sendMessage(errorMessage)
 		disconnectClientCase(processor)
-		messageToUsers := getDisconnectedMessage(processor.username)
+		messageToUsers := processor.creator.getDisconnectedMessage(processor.username)
 		processor.server.sendMessageToAllUsers(processor, messageToUsers)
 	}
 }
@@ -219,54 +221,54 @@ func identifyCase(processor *ServerProcessor, userName string) {
 		
 		processor.setUserName(userName)
 		
-		succesMessage := getSuccesMessage("succes", message.IDENTIFY_TYPE)
+		succesMessage := processor.creator.getSuccesMessage("succes", message.IDENTIFY_TYPE)
 		processor.sendMessage(succesMessage)
 		
 	} else {
 		warningString := fmt.Sprintf("El usuario '%s' ya existe", userName)
-		warningMessage := getUsernameWarningMessage(warningString, message.IDENTIFY_TYPE, userName)
+		warningMessage := processor.creator.getUsernameWarningMessage(warningString, message.IDENTIFY_TYPE, userName)
 		processor.sendMessage(warningMessage)
 	}
 }
 
 func userListCase(processor *ServerProcessor) {
 	userList := processor.server.getUserList()
-	userListMessage := getUserListMessage(message.USER_LIST_TYPE, userList)
+	userListMessage := processor.creator.getUserListMessage(message.USER_LIST_TYPE, userList)
 	processor.sendMessage(userListMessage)
 }
 
 func disconnectClientCase(processor *ServerProcessor) {
 	processor.connection.Close()
 	processor.server.deleteUserName(processor.username)
-	disconnectedMessage := getDisconnectedMessage(processor.username)
+	disconnectedMessage := processor.creator.getDisconnectedMessage(processor.username)
 	processor.server.sendMessageToAllUsers(processor, disconnectedMessage)
 	processor.leaveAllRooms(processor.username, processor.rooms)
 }
 
 func publicMessageCase(processor *ServerProcessor, publicMessageToSend string) {
-	publicMessage := getPublicMessage(processor.username, publicMessageToSend)
+	publicMessage := processor.creator.getPublicMessage(processor.username, publicMessageToSend)
 	processor.server.sendMessageToAllUsers(processor, publicMessage)	
 }
 
 func privateMessageCase(processor *ServerProcessor, receptor string, privateMessageToSend string) {
 	receptorProcessor, error := processor.server.GetUserProcessor(receptor)
 	if error != nil {
-		warningMessage := getUsernameWarningMessage(error.Error(), message.MESSAGE_TYPE, receptor)
+		warningMessage := processor.creator.getUsernameWarningMessage(error.Error(), message.MESSAGE_TYPE, receptor)
 		processor.sendMessage(warningMessage)
 		return
 	}
-	privateMessage := getPrivateMessage(privateMessageToSend, processor.username)
+	privateMessage := processor.creator.getPrivateMessage(privateMessageToSend, processor.username)
 	receptorProcessor.sendMessage(privateMessage)
 }
 
 func newRoomCase(processor *ServerProcessor, roomName string) {
 	error := processor.server.CreateNewRoom(processor.username, processor, roomName)
 	if error != nil {
-		warningMessage := getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
+		warningMessage := processor.creator.getRoomWarningMessage(error.Error(), message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 	} else {
 		processor.server.addInvitedUserToRoom(roomName, processor.username, processor)
-		succesMessage := getRoomSuccesMessage("succes", message.NEW_ROOM_TYPE, roomName)
+		succesMessage := processor.creator.getRoomSuccesMessage("succes", message.NEW_ROOM_TYPE, roomName)
 		processor.sendMessage(succesMessage)
 		processor.addRoom(roomName)
 	}
@@ -276,18 +278,18 @@ func inviteToRoomCase(processor *ServerProcessor, roomName string, users string)
 	usersToInvite := toArrayOfUsers(users)
 	if theyAllExist, user := processor.server.VerifyIdentifiedUsers(usersToInvite); !theyAllExist {
 		warningString := fmt.Sprintf("El usuario '%s' no existe", user)
-		warningMessage := getUsernameWarningMessage(warningString, message.INVITE_TYPE, user)
+		warningMessage := processor.creator.getUsernameWarningMessage(warningString, message.INVITE_TYPE, user)
 		processor.sendMessage(warningMessage)
 		return
 	}
 	error:= processor.server.verifyRoomInvitation(processor.username, roomName, usersToInvite)
 	if error != nil {
-		warningMessage := getRoomWarningMessage(error.Error(), message.INVITE_TYPE, roomName)
+		warningMessage := processor.creator.getRoomWarningMessage(error.Error(), message.INVITE_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 		return
 	}
 	processor.sendInvitation(processor.username, roomName, users)
-	succesMessage := getRoomSuccesMessage("succes", message.INVITE_TYPE, roomName)
+	succesMessage := processor.creator.getRoomSuccesMessage("succes", message.INVITE_TYPE, roomName)
 	processor.sendMessage(succesMessage)
 }
 
@@ -298,7 +300,7 @@ func (processor *ServerProcessor) sendInvitation(host string, roomName string, u
 		processor.server.addInvitedUserToRoom(roomName, userProcessor.username, userProcessor)
 		invitationString := fmt.Sprintf("%v te invita al cuarto '%v'",
 		host, roomName)
-		invitationMessage := getRoomInvitationMessage(invitationString, host, roomName)
+		invitationMessage := processor.creator.getRoomInvitationMessage(invitationString, host, roomName)
 		userProcessor.sendMessage(invitationMessage)
 	}
 }
@@ -306,14 +308,15 @@ func (processor *ServerProcessor) sendInvitation(host string, roomName string, u
 func joinRoomCase(processor *ServerProcessor, roomName string) {
 	error := processor.server.addUserToRoom(processor.username, roomName)
 	if error != nil {
-		processor.sendMessage(getRoomWarningMessage(error.Error(), message.JOIN_ROOM_TYPE, roomName))
+		warningMessage := processor.creator.getRoomWarningMessage(error.Error(), message.JOIN_ROOM_TYPE, roomName)
+		processor.sendMessage(warningMessage)
 		return
 	}
 	
 	processor.server.removeInvitedUserInRoom(processor.username, roomName)
-	joinedMessage := getJoinedMessage(roomName, processor.username)
+	joinedMessage := processor.creator.getJoinedMessage(roomName, processor.username)
 	processor.server.sendMessageToRoom(processor.username, roomName, joinedMessage)
-	succesMessage := getRoomSuccesMessage("succes", message.JOIN_ROOM_TYPE, roomName)
+	succesMessage := processor.creator.getRoomSuccesMessage("succes", message.JOIN_ROOM_TYPE, roomName)
 	processor.sendMessage(succesMessage)
 	processor.addRoom(roomName)
 }
@@ -321,11 +324,11 @@ func joinRoomCase(processor *ServerProcessor, roomName string) {
 func roomUsersCase(processor *ServerProcessor, roomName string) {
 	roomUserList, err := processor.server.getRoomUserList(processor.username, roomName)
 	if err != nil {
-		warningMessage := getRoomWarningMessage(err.Error(), message.ROOM_USERS_TYPE, roomName)
+		warningMessage := processor.creator.getRoomWarningMessage(err.Error(), message.ROOM_USERS_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 		return
 	}
-	roomUsersMessage := getUserListMessage(message.ROOM_USER_LIST_TYPE, roomUserList)
+	roomUsersMessage := processor.creator.getUserListMessage(message.ROOM_USER_LIST_TYPE, roomUserList)
 	processor.sendMessage(roomUsersMessage)
 }
 
@@ -338,11 +341,11 @@ func toArrayOfUsers(line string) ([]string) {
 func roomMessageCase(processor *ServerProcessor, roomName string, messageToSend string) {
 	messageToSend = fmt.Sprintf("[%v]: ", roomName) + messageToSend
 	
-	roomMessage := getRoomMessage(roomName, processor.username, messageToSend)
+	roomMessage := processor.creator.getRoomMessage(roomName, processor.username, messageToSend)
 	
 	error := processor.server.sendMessageToRoom(processor.username, roomName, roomMessage)
 	if error != nil {
-		warningMessage := getRoomWarningMessage(error.Error(), message.ROOM_MESSAGE_TYPE ,roomName)
+		warningMessage := processor.creator.getRoomWarningMessage(error.Error(), message.ROOM_MESSAGE_TYPE ,roomName)
 		processor.sendMessage(warningMessage)
 		return
 	}
@@ -351,7 +354,7 @@ func roomMessageCase(processor *ServerProcessor, roomName string, messageToSend 
 func leaveMessageCase(processor *ServerProcessor, userName string, roomName string) {
 	error := processor.server.disconnectUserFromRoom(userName, roomName)
 	if error != nil {
-		warningMessage := getRoomWarningMessage(error.Error(), message.LEAVE_ROOM_TYPE, roomName)
+		warningMessage := processor.creator.getRoomWarningMessage(error.Error(), message.LEAVE_ROOM_TYPE, roomName)
 		processor.sendMessage(warningMessage)
 		return
 	}
@@ -360,10 +363,10 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 		processor.server.deleteRoom(roomName)
 	}
 
-	succesMessage := getRoomSuccesMessage("succes", message.LEAVE_ROOM_TYPE, roomName)
+	succesMessage := processor.creator.getRoomSuccesMessage("succes", message.LEAVE_ROOM_TYPE, roomName)
 	processor.sendMessage(succesMessage)
 
-	leftRoomMessage := getLeftRoomMessage(roomName, userName)
+	leftRoomMessage := processor.creator.getLeftRoomMessage(roomName, userName)
 	processor.server.sendMessageToRoom(userName, roomName, leftRoomMessage)
 	
 }
@@ -371,93 +374,7 @@ func leaveMessageCase(processor *ServerProcessor, userName string, roomName stri
 func (processor *ServerProcessor) leaveAllRooms(userName string, rooms []string) {
 	for i := 0; i < len(rooms); i++ {
 		processor.server.disconnectUserFromRoom(userName, rooms[i])
-		leftRoomMessage := getLeftRoomMessage(rooms[i], userName)
+		leftRoomMessage := processor.creator.getLeftRoomMessage(rooms[i], userName)
 		processor.server.sendMessageToRoom(userName, rooms[i], leftRoomMessage)
 	}
-}
-
-func getRoomSuccesMessage(succes string, operation string, roomName string) ([]byte) {
-	succesMessage := message.RoomSuccesMessage{message.INFO_TYPE, succes, operation, roomName}
-	return succesMessage.GetJSON()
-}
-
-func getSuccesMessage(succes string, operation string) ([]byte) {
-	succesMessage := message.SuccesMessage{message.INFO_TYPE, succes, operation}
-	return succesMessage.GetJSON()
-}
-
-func getUsernameWarningMessage(warning string, operation string, userName string) ([]byte) {
-	warningMessage := message.UsernameWarningMessage{message.WARNING_TYPE, warning, operation, userName}
-	return warningMessage.GetJSON()
-}
-
-func getStatusWarningMessage(warning string, operation string, status string) ([]byte) {
-	warningMessage := message.StatusWarningMessage{message.WARNING_TYPE, warning, operation, status}
-	return warningMessage.GetJSON()
-}
-
-func getRoomWarningMessage(warning string, operation string, roomName string) ([]byte) {
-	warningMessage := message.RoomWarningMessage{message.WARNING_TYPE, warning, operation, roomName}
-	return warningMessage.GetJSON()
-}
-
-func getDisconnectedMessage(userName string) ([]byte) {
-	disconnectedMessage := message.DisconnectedMessage{message.DISCONNECTED_TYPE, userName}
-	return disconnectedMessage.GetJSON()
-}
-
-func getUserListMessage(typeOfList string, userList []string) ([]byte) {
-	switch typeOfList {
-	case message.ROOM_USER_LIST_TYPE:
-		userListMessage := message.UserList{message.ROOM_USER_LIST_TYPE, userList}
-		return userListMessage.GetJSON()
-	default:
-		userListMessage := message.UserList{message.USER_LIST_TYPE, userList}
-		return userListMessage.GetJSON()
-	}
-}
-
-func getPrivateMessage(private string, transmitter string) ([]byte) {
-	privateMessage := message.NewMessage{message.PRIVATE_TYPE, transmitter, private}
-	return privateMessage.GetJSON()
-}
-
-func getPublicMessage(userName string, public string) ([]byte) {
-	publicMessage := message.NewMessage{message.PUBLIC_MESSAGE_FROM_TYPE, userName, public}
-	return publicMessage.GetJSON()
-}
-
-func getNewStatusMessage(userName string, status string) ([]byte) {
-	newStatusMessage := message.NewStatusMessage{message.NEW_STATUS_TYPE, userName, status}
-	return newStatusMessage.GetJSON()
-}
-
-func getStatusErrorMessage(error string, operation string) ([]byte) {
-	errorMessage := message.StatusErrorMessage{message.ERROR_TYPE, error, operation}
-	return errorMessage.GetJSON()
-}
-
-func getRoomInvitationMessage(invitation string, host string, roomName string) ([]byte) {
-	roomInvitationMessage := message.RoomInvitationMessage{message.INVITATION_TYPE, invitation, host, roomName}
-	return roomInvitationMessage.GetJSON()
-}
-
-func getJoinedMessage(roomName string, userName string) ([]byte) {
-	joinedMessage := message.JoinedRoomMessage{message.JOINED_ROOM_TYPE, roomName, userName}
-	return joinedMessage.GetJSON()
-}
-
-func getRoomMessage(roomName string, userName string, messageToSend string) ([]byte) {
-	roomMessage := message.RoomMessage{message.ROOM_MESSAGE_FROM_TYPE, roomName, userName, messageToSend}
-	return roomMessage.GetJSON()
-}
-
-func getLeftRoomMessage(roomName string, userName string) ([]byte) {
-	leftRoomMessage := message.LeftRoomMessage{message.LEFT_ROOM_TYPE, roomName, userName}
-	return leftRoomMessage.GetJSON()
-}
-
-func getIdentifyErrorMessage() ([]byte) {
-	errorMessage := message.IdentifyErrorMessage{message.ERROR_TYPE, "User not identified"}
-	return errorMessage.GetJSON()
 }
