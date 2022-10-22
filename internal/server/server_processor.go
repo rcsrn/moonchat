@@ -117,7 +117,8 @@ func (processor *ServerProcessor) UnmarshalJSON(j []byte) (map[string]string, er
 			return nil, error1
 		}
 	}
-	return mapString, nil}
+	return mapString, nil
+}
 
 //auxiliar function to deal the case when it is necessary to work with an array of strings.
 func convertMessageToMapString(message message.InviteToRoomMessage) (map[string]string) {
