@@ -9,4 +9,5 @@ const (
 	NEW_ROOM = "/newroom"
 	INVITE = "invite"
 	ROOM_MESSAGE = "/roommessage"
+	IDENTIFY = "/username"
 )

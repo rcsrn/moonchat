@@ -50,3 +50,10 @@ func (creator *messageCreator) getPublicMessage(messageToSend string) []byte {
 	return publicMessage.GetJSON()
 }
 
+func (creator *messageCreator) getIdentifyMessage(userName string) []byte {
+	identifyMessage := message.IdentifyMessage{message.IDENTIFY_TYPE, userName}
+	return identifyMessage.GetJSON()
+}
+
+
+

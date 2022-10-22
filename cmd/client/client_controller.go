@@ -31,9 +31,13 @@ func main () {
 		os.Exit(1)
 	}
 	printer.PrintInstructions()
+	printer.RequestUserName()
 	listener = view.GetConsoleListenerInstance()
-	
 
+	processor := client.GetProcessor()
+	go processor.ReadFromServer()
+
+	
 	for {		
 		message := listener.ListenFromConsole()
 		if message != nil {
@@ -45,3 +49,4 @@ func main () {
 func getHostDirection(arguments []string) string {
 	return arguments[1] + ":" + arguments[2]
 }
+

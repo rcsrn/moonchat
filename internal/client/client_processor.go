@@ -6,22 +6,21 @@ import (
 	"encoding/json"
 	"strings"
 	"github.com/rcsrn/moonchat/internal/message"
+	"os"
 	"fmt"
 )
 
 type ClientProcessor struct {
 	connection net.Conn
-	identified bool
-	username string
 	creator *messageCreator
 	verifier *messageVerifier
 }
 
 func getClientInstance(connection net.Conn) *ClientProcessor {
-	return &ClientProcessor{connection, false, "", &messageCreator{}, &messageVerifier{}}
+	return &ClientProcessor{connection, &messageCreator{}, &messageVerifier{}}
 }
 
-func (processor *ClientProcessor) readFromServer() {
+func (processor *ClientProcessor) ReadFromServer() {
 	for {
 		buffer := make([]byte, 1024)
 		numBitsRead, error1 := processor.connection.Read(buffer)
@@ -37,7 +36,7 @@ func (processor *ClientProcessor) readFromServer() {
 			break
 		}
 
-		processor.processServerMessage(messageReceived)
+		processor.throwServerMessage(messageReceived)
 		
 	}
 }
@@ -83,6 +82,8 @@ func (processor *ClientProcessor) ProcessMessage(message []string) error {
 	}
 	firstWord := message[0]
 	switch firstWord {
+	case IDENTIFY: processor.identify(message[1])
+		return nil
 	case CLOSE: processor.disconnect()
 		return nil
 	case LEAVE_ROOM: processor.leaveRoom(message[1])
@@ -95,8 +96,7 @@ func (processor *ClientProcessor) ProcessMessage(message []string) error {
 		return nil
 	case NEW_ROOM: processor.createNewRoom(message[1])
 		return nil
-	case INVITE:
-		processor.inviteUsersToRoom(message[1], message[2:])
+	case INVITE: processor.inviteUsersToRoom(message[1], message[2:])
 		return nil
 	case ROOM_MESSAGE: processor.sendRoomMessage(message[1], message[2])
 		return nil
@@ -105,27 +105,21 @@ func (processor *ClientProcessor) ProcessMessage(message []string) error {
 	}
 }
 
-func (processor *ClientProcessor) processServerMessage(messageReceived map[string]string) string {
-	switch messageReceived["type"] {
-	case message.INFO_TYPE: return infoCase(messageReceived)
-	case message.WARNING_TYPE: return warningCase(messageReceived)
-	case message.ERROR_TYPE: return errorCase(messageReceived)
-	case message.NEW_USER_TYPE: return newUserCase(messageReceived)
-	case message.DISCONNECTED_TYPE: return disconnectedCase(messageReceived)
-	case message.NEW_STATUS_TYPE: return newStatusCase(messageReceived)
-	case message.PRIVATE_TYPE: return privateCase(messageReceived)
-	case message.INVITATION_TYPE: return invitationCase(messageReceived)
-	case message.JOINED_ROOM_TYPE: return joinedCase(messageReceived)
-	case message.ROOM_USER_LIST_TYPE: return roomUserListCase(messageReceived)
-	case messsage.USER_LIST: return userListCase(messageReceived)
-	case messge.LEFT_ROOM_TYPE: return leftCase(messageReceived)
-	default: return ""
-	}
+func (processor *ClientProcessor) throwServerMessage(messageReceived map[string]string) map[string]string {
+	fmt.Println(messageReceived)
+	return messageReceived
+}
+
+func (processor *ClientProcessor) identify(userName string) {
+	identifyMessage := processor.creator.getIdentifyMessage(userName)
+	processor.sendMessage(identifyMessage)
 }
 
 func (processor *ClientProcessor) disconnect() {
 	disconnectMessage := processor.creator.getDisconnectMessage()
 	processor.sendMessage(disconnectMessage)
+	processor.connection.Close()
+	os.Exit(0)
 }
 
 func (processor *ClientProcessor) leaveRoom(roomName string) {
@@ -171,44 +165,3 @@ func (processor *ClientProcessor) sendPublicMessage(message string) {
 func createError(errorMessage string) error {
 	return errors.New(errorMessage)
 }
-
-func warningCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func newUserCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func disconnectedCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func newStatusCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func privateCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func invitationCase(messageReceived map[string]string) string {
-	return ""
-}
-
-func joinedCase(messageReceived map[string]string) string {
-	fmt.Println(messageReceived)
-}
-
-func roomUserListCase(messageReceived map[string]string) string {
-	return string(messageReceived)
-}
-
-func userListCase(messageReceived map[string]string) string {
-	return string(messageReceived)
-}
-
-func leftCase(messageReceived map[string]string) string {
-	return string(messageReceived)
-}
-
