@@ -31,15 +31,22 @@ func main () {
 		os.Exit(1)
 	}
 	printer.PrintInstructions()
+	printer.RequestUserName()
 	listener = view.GetConsoleListenerInstance()
-	
 
+	processor := client.GetProcessor()
+	go processor.ReadFromServer()
+
+	
 	for {		
-	message := listener.ListenFromConsole()
-	client.ProcessMessage(message)
+		message := listener.ListenFromConsole()
+		if message != nil {
+			client.ProcessMessage(message)
+		}
 	}
 }
 
 func getHostDirection(arguments []string) string {
 	return arguments[1] + ":" + arguments[2]
 }
+

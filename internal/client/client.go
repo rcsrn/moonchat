@@ -13,6 +13,10 @@ func GetClientInstance() *Client {
 	return &Client{&ClientProcessor{}, false}
 }
 
+func (client *Client) GetProcessor() *ClientProcessor {
+	return client.processor
+}
+
 func (client *Client) Connect(host string) error {
 	connection, error := net.Dial("tcp", host)
         if error != nil {

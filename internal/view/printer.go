@@ -9,6 +9,7 @@ type Printer struct {
 
 const (
 	WELCOME = "Bienvenido a Moonchat!"
+	IDENTIFY_INSTRUCTION = "/username <NombreDeUsuario>"
 	CLOSE_INSTRUCTION = "/close"
 	STATUS_INSTRUCTION = "/status <AWAY/ACTIVE/BUSY>"
 	NEW_ROOM_INSTRUCTION = "/newroom <NombreDeCuarto>"
@@ -34,6 +35,7 @@ func (printer *Printer) PrintInstructions() {
 	fmt.Println(WELCOME + "\n")
 	fmt.Println("Escribe para enviar un mensaje publico.")
 	fmt.Println("O puedes realizar las siguientes operaciones: \n")
+	fmt.Println("*Para ingresar nombre de usuario: " + IDENTIFY_INSTRUCTION)
 	fmt.Println("*Para cambiar de estado: " + STATUS_INSTRUCTION)
 	fmt.Println("*Para obtener la lista de usuarios: " + USER_LIST_INSTRUCTION)
 	fmt.Println("*Para enviar un mensaje privado a algun usuario: " + PRIVATE_MESSAGE_INSTRUCTION)
