@@ -63,31 +63,38 @@ func (processor *ClientProcessor) leaveRoom() {
 }
  
 func (processor *ClientProcessor) changeStatus() {
-	
+	newStatusMessage:= processor.creator.getStatusMessage()
+	processor.sendMessage(newStatusMessage)
 }
 
 func (processor *ClientProcessor) requestUserList() {
-	
+	userListMessage := processor.creator.getUserListMessage()
+	processor.sendMessage(userListMessage)
 }
 
 func (processor *ClientProcessor) sendPrivateMessage() {
-	
+	privateMessage := processor.creator.getPrivateMessage()
+	processor.sendMessage(privateMessage)
 }
 
 func (processor *ClientProcessor) createNewRoom() {
-	
+	newRoomMessage := processor.creator.getNewRoomMessage()
+	processor.sendMessage(newRoomMessage)
 }
 
 func (processor *ClientProcessor) inviteUsersToRoom() {
-	
+	invitationMessage := processor.creator.getInvitationMessage()
+	processor.sendMessage(invitationMessage)
 }
 
 func (processor *ClientProcessor) sendRoomMessage() {
-	
+	roomMessage := processor.creator.getRoomMessage()
+	processor.sendMessage(roomMessage)
 }
 
 func (processor *ClientProcessor) sendPublicMessage() {
-	
+	publicMessage := processor.creator.getPublicMessage()
+	processor.sendMessage(publicMessage)
 }
 
 
