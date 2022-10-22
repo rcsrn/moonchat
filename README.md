@@ -42,7 +42,7 @@ Tanto para compilar el servidor y el cliente se tiene un archivo Makefile. Ejecu
 ### Ejecución
 
 *Para el servidor: make startServer
-*Para el cliente ./client_controller
+*Para el cliente ./client_controller <DirecciónIP> <Puerto>
 
 ### Pruebas Unitarias
 Entrar a test/test_server/ y ejecutar go test -v
