@@ -223,3 +223,17 @@ func (mess LeftRoomMessage) GetJSON() []byte {
 	return message
 }
 
+type RoomMessage struct {
+	Type string `json:"type"`
+	Roomname string `json:"roomname"`
+	Username string `json:"username"`
+	Message string `json:"message"`
+}
+
+func (mess RoomMessage) GetJSON() []byte {
+	message, err := json.Marshal(mess)
+	if err != nil {
+		fmt.Println("This should not happen")
+	}
+	return message
+}

@@ -76,14 +76,13 @@ func (mess JoinedRoomMessage) GetJSON() []byte {
 	return message
 }
 
-type RoomMessage struct {
+type ToRoomMessage struct {
 	Type string `json:"type"`
 	Roomname string `json:"roomname"`
-	Username string `json:"username"`
-	Message string `json:"message"`
+	Message string `json:"message"` 
 }
 
-func (mess RoomMessage) GetJSON() []byte {
+func (mess ToRoomMessage) GetJSON() []byte {
 	message, err := json.Marshal(mess)
 	if err != nil {
 		fmt.Println("This should not happen")
@@ -158,7 +157,6 @@ func (mess PrivateMessage) GetJSON() []byte {
 type NewRoomMessage struct {
 	Type string `json:"type"`
 	Roomname string `json:"roomname"`
-	Message string `json:"message"`
 }
 
 func (mess NewRoomMessage) GetJSON() []byte {
