@@ -106,7 +106,6 @@ func (processor *ClientProcessor) ProcessMessage(message []string) error {
 }
 
 func (processor *ClientProcessor) throwServerMessage(messageReceived map[string]string) map[string]string {
-	fmt.Println(messageReceived)
 	return messageReceived
 }
 
