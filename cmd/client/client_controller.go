@@ -35,8 +35,10 @@ func main () {
 	
 
 	for {		
-	message := listener.ListenFromConsole()
-	client.ProcessMessage(message)
+		message := listener.ListenFromConsole()
+		if message != nil {
+			client.ProcessMessage(message)
+		}
 	}
 }
 
