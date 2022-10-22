@@ -45,4 +45,4 @@ Tanto para compilar el servidor y el cliente se tiene un archivo Makefile. Ejecu
 *Para el cliente ./client_controller
 
 ### Pruebas Unitarias
-Entrar a test/ y ejecutar go test -v
+Entrar a test/test_server/ y ejecutar go test -v
